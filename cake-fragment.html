@@ -1,0 +1,379 @@
+<!doctype html>
+<!-- =====================================================================
+  MAKE-A-WISH CAKE  ·  standalone drop-in fragment
+  -------------------------------------------------------------------------
+  Copy everything between the "START FRAGMENT" and "END FRAGMENT" markers
+  into an existing page's cake section. No dependencies beyond CSS/JS.
+
+  CLASS / ID CONVENTIONS (documented, as requested):
+    #candles            the section root — listen here for events
+    .candle             one clickable candle (role="button", keyboard-aware)
+    .candle.out         "blown out" state (lit flame hidden, smoke plays)
+    .flame .wick .stem  parts of a single candle
+    .smoke              the rising puff that plays when a candle goes out
+    .candles-row        the row that holds the 5 candles
+    .cake .tier .plate  purely decorative cake below the candles
+
+  JS HOOKS FROM THE PARENT PAGE:
+    1. Event — the root fires:
+         #candles.addEventListener('allCandlesOut', e => { /* confetti! */ })
+       and #candles fires 'candlesRelit' when you call relightAll().
+    2. Callback — set window.onAllCandlesOut = function(){ ... }.
+    3. API —
+         document.getElementById('candles').relightAll();
+       (a global helper relightCandles() is also exposed)
+
+  STYLING: theme = deep plum bg (#150E24), cream frosting (#F5EDE0),
+  gold accent (#E7B15C), coral accent (#F2665A). All colours are CSS
+  custom properties you can override from your own stylesheet.
+===================================================================== -->
+
+<!-- ==================== START FRAGMENT ==================== -->
+
+<section id="candles" class="wish-cake" aria-label="Make a wish. Blow out all five candles to lock in your wish." style="--bg:#150E24;--cream:#F5EDE0;--gold:#E7B15C;--coral:#F2665A;--plum-1:#5B3B78;--plum-2:#3B2150;--ink:#241F33;">
+
+  <p class="cake-dir">Tap each flame to blow it out — then make a wish.</p>
+
+  <div class="cake-stage">
+    <!-- the cake itself is decorative; the candles below are the interactive part -->
+    <div class="cake" aria-hidden="true">
+      <div class="tier-tier tier-tier--t">
+        <span class="frost"></span>
+      </div>
+      <div class="tier-tier tier-tier--m">
+        <span class="frost"></span>
+        <span class="band"></span>
+      </div>
+      <div class="tier-tier tier-tier--b">
+        <span class="frost"></span>
+        <span class="band"></span>
+      </div>
+      <div class="plate"></div>
+    </div>
+
+    <!-- 5 candles, evenly spaced, each individually clickable -->
+    <div class="candles-row">
+      <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 1 of 5">
+        <span class="smoke s1"></span>
+        <span class="smoke s2"></span>
+        <span class="smoke s3"></span>
+        <span class="flame"></span>
+        <span class="wick"></span>
+        <span class="stem"></span>
+      </div>
+      <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 2 of 5">
+        <span class="smoke s1"></span>
+        <span class="smoke s2"></span>
+        <span class="smoke s3"></span>
+        <span class="flame"></span>
+        <span class="wick"></span>
+        <span class="stem"></span>
+      </div>
+      <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 3 of 5">
+        <span class="smoke s1"></span>
+        <span class="smoke s2"></span>
+        <span class="smoke s3"></span>
+        <span class="flame"></span>
+        <span class="wick"></span>
+        <span class="stem"></span>
+      </div>
+      <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 4 of 5">
+        <span class="smoke s1"></span>
+        <span class="smoke s2"></span>
+        <span class="smoke s3"></span>
+        <span class="flame"></span>
+        <span class="wick"></span>
+        <span class="stem"></span>
+      </div>
+      <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 5 of 5">
+        <span class="smoke s1"></span>
+        <span class="smoke s2"></span>
+        <span class="smoke s3"></span>
+        <span class="flame"></span>
+        <span class="wick"></span>
+        <span class="stem"></span>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="relight" hidden>Light the candles again</button>
+
+  <!-- leave this empty / unhide it yourself; the all-out message is the
+       parent page's job so you can pair it with confetti -->
+  <p class="cake-note" hidden></p>
+</section>
+
+<style>
+  /* ---------------- scoped to #candles so the fragment can't leak ---------------- */
+  #candles,
+  #candles * { box-sizing: border-box; }
+
+  #candles {
+    --bg: #150E24;
+    --cream: #F5EDE0;
+    --gold: #E7B15C;
+    --coral: #F2665A;
+    --plum-1: #5B3B78;
+    --plum-2: #3B2150;
+    --ink: #241F33;
+
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 20px 44px;
+    font-family: "Work Sans", system-ui, sans-serif;
+    color: var(--cream);
+    text-align: center;
+    background: var(--bg);
+    border-radius: 28px;
+    overflow: hidden;
+  }
+
+  .cake-dir { margin: 0 0 22px; font-size: 0.9rem; letter-spacing: 0.12em; text-transform: uppercase; color: color-mix(in srgb, var(--cream) 64%, transparent); }
+
+  /* ---- the dish ---- */
+  .cake-stage { position: relative; width: min(340px, 100%); margin: 0 auto; padding-top: 52px; }
+
+  .cake { display: flex; flex-direction: column; }
+
+  .plate {
+    width: 100%;
+    height: 30px;
+    margin-top: -4px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 45%, #2A1B3F 0%, #201333 58%, #160F28 100%);
+    border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+    box-shadow: inset 0 0 0 7px color-mix(in srgb, var(--gold) 12%, transparent),
+                0 12px 28px rgba(0, 0, 0, 0.42);
+  }
+
+  /* ---- tiers (berry plum bodies, cream frosting, gold sash) ---- */
+  .tier-tier {
+    position: relative;
+    margin: 0 auto;
+    border-radius: 12px 12px 9px 9px;
+    background: linear-gradient(180deg, var(--plum-1) 0%, #4A2E63 55%, var(--plum-2) 100%);
+    box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.09),
+                inset 0 -16px 20px rgba(0, 0, 0, 0.30),
+                0 14px 26px rgba(0, 0, 0, 0.35);
+  }
+  .tier-tier--b { width: 300px; height: 84px; }
+  .tier-tier--m { width: 228px; height: 70px; margin-bottom: -16px; }
+  .tier-tier--t { width: 160px; height: 58px; margin-bottom: -16px; }
+
+  /* runny cream frosting: repeating scallops + longer drips, both purely
+     radial-gradient layers so no image assets are needed */
+  .frost {
+    position: absolute;
+    top: 0;
+    left: -5px;
+    right: -5px;
+    height: 17px;
+    border-radius: 7px 7px 0 0;
+    background-color: var(--cream);
+    background-image:
+      radial-gradient(circle at 13px 0, var(--cream) 11px, transparent 12px),
+      radial-gradient(circle at 44px 0, var(--cream) 16px, transparent 17px),
+      radial-gradient(circle at 72px 0, var(--cream) 9px, transparent 10px),
+      radial-gradient(circle at 90px 0, var(--cream) 13px, transparent 14px);
+    background-size: 96px 17px;
+    background-repeat: repeat-x;
+  }
+
+  .band {
+    position: absolute;
+    top: 44%;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(180deg, var(--gold) 0%, #D5973F 100%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  }
+
+  /* ---- the candles row (overlays the cake's top tier) ---- */
+  .candles-row {
+    position: absolute;
+    top: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 138px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  /* ---- a single candle ---- */
+  .candle {
+    position: relative;
+    width: 15px;
+    height: 46px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    outline-offset: 4px;
+  }
+  .candle:focus-visible { outline: 2px solid var(--gold); border-radius: 6px; }
+  .candle.out { cursor: default; }
+  .candle.out .stem { filter: brightness(0.55); }
+
+  .stem {
+    position: absolute;
+    top: 13px;
+    left: 2px;
+    right: 2px;
+    bottom: 0;
+    border-radius: 3px 3px 4px 4px;
+    background: repeating-linear-gradient(180deg, var(--cream) 0 4px, var(--coral) 4px 8px);
+    box-shadow: inset -1px 0 1px rgba(0, 0, 0, 0.22), 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .wick { position: absolute; top: 8px; left: 50%; width: 2px; height: 6px; margin-left: -1px; border-radius: 1px; background: var(--ink); }
+
+  /* ---- flame: soft teardrop with a warm glow. Flicker is a gentle
+         scale/rotate wobble — deliberately not a flash ---- */
+  .flame {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 10px;
+    height: 15px;
+    margin-left: -5px;
+    border-radius: 55% 55% 55% 55% / 62% 62% 44% 44%;
+    background: radial-gradient(circle at 50% 28%,
+                  #FDF3CE 0%, #FFD98E 32%,
+                  color-mix(in srgb, var(--coral) 85%, white 15%) 60%,
+                  color-mix(in srgb, var(--coral) 0%, transparent) 78%);
+    transform-origin: 50% 100%;
+    box-shadow: 0 0 16px 7px color-mix(in srgb, var(--gold) 30%, transparent),
+                0 0 30px 16px color-mix(in srgb, var(--gold) 14%, transparent);
+    animation: candle-flicker 1.5s ease-in-out infinite;
+    transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+  }
+
+  @keyframes candle-flicker {
+    0%, 100% { transform: scaleY(1) rotate(-1.4deg); }
+    25%      { transform: scaleY(1.09) rotate(0.9deg) translateX(0.4px); }
+    50%      { transform: scaleY(0.93) rotate(-0.7deg) translateX(-0.5px); }
+    75%      { transform: scaleY(1.05) rotate(1.5deg) translateX(0.3px); }
+  }
+
+  /* ---- blown out: flame dies, thin smoke trail rises and fades (~1s) ---- */
+  .candle.out .flame {
+    animation: none;
+    opacity: 0;
+    transform: scale(0.35) translateY(3px) rotate(-12deg);
+  }
+  .candle.out { pointer-events: none; }
+
+  .smoke {
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    width: 7px;
+    height: 15px;
+    margin-left: -3.5px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, #B4AAC2 55%, transparent) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .candle.out .smoke { animation: candle-puff 1.1s ease-out forwards; }
+  .candle.out .s1 { --dx: -4px; animation-delay: 0s; }
+  .candle.out .s2 { --dx: 3px;  animation-delay: 0.13s; }
+  .candle.out .s3 { --dx: -1px; animation-delay: 0.24s; }
+
+  @keyframes candle-puff {
+    0%   { opacity: 0;    transform: translate(0, 0) scale(0.5); }
+    25%  { opacity: 0.55; }
+    60%  { opacity: 0.35; transform: translate(var(--dx, 0), -18px) scale(1.1); }
+    100% { opacity: 0;    transform: translate(var(--dx, 0), -34px) scale(1.45); }
+  }
+
+  /* ---- relight button (parent may restyle) ---- */
+  .relight {
+    margin-top: 26px;
+    padding: 9px 18px;
+    font: 500 0.8rem "Work Sans", system-ui, sans-serif;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .relight:hover { background: var(--gold); color: var(--bg); }
+
+  .cake-note { margin: 0; font-size: 0.85rem; color: color-mix(in srgb, var(--cream) 62%, transparent); }
+
+  /* ---- respect reduced motion: no flicker/puff, instant state changes ---- */
+  @media (prefers-reduced-motion: reduce) {
+    .flame { animation: none; }
+    .candle.out .smoke { animation: none; opacity: 0; }
+    .candle.out .flame { transition: none; }
+  }
+</style>
+
+<script>
+  (function () {
+    "use strict";
+    var root = document.getElementById("candles");
+    if (!root) return;
+
+    var candles = Array.prototype.slice.call(root.querySelectorAll(".candle"));
+    var relightBtn = root.querySelector(".relight");
+    var note = root.querySelector(".cake-note");
+    var locked = false;
+
+    // optional body text callback the parent page can set
+    if (typeof window.onAllCandlesOut !== "function") window.onAllCandlesOut = null;
+
+    function litCount() { return candles.filter(function (c) { return !c.classList.contains("out"); }).length; }
+
+    function blowOut(el) {
+      if (el.classList.contains("out")) return;
+      el.classList.add("out"); // -> flame dies, smoke plays (pure CSS)
+      checkAllOut();
+    }
+
+    function checkAllOut() {
+      if (locked || litCount() !== 0) return;
+      locked = true;
+      root.classList.add("cake-extinguished");
+      if (relightBtn) relightBtn.hidden = false;
+      // 1) custom event — the recommended hook
+      root.dispatchEvent(new CustomEvent("allCandlesOut", { bubbles: false }));
+      // 2) optional global callback
+      if (typeof window.onAllCandlesOut === "function") window.onAllCandlesOut();
+    }
+
+    // public API — call root.relightAll() to put everything back
+    root.relightAll = function () {
+      candles.forEach(function (c) { c.classList.remove("out"); });
+      locked = false;
+      root.classList.remove("cake-extinguished");
+      if (relightBtn) relightBtn.hidden = true;
+      if (note) note.hidden = true;
+      root.dispatchEvent(new CustomEvent("candlesRelit"));
+    };
+
+    // convenience global
+    window.relightCandles = function () { root.relightAll(); };
+
+    // clicks (works for touch too via mouse/tap) and keyboard
+    root.addEventListener("click", function (ev) {
+      var c = ev.target.closest ? ev.target.closest(".candle") : null;
+      if (c) blowOut(c);
+      else if (relightBtn && ev.target === relightBtn) root.relightAll();
+    });
+
+    candles.forEach(function (c) {
+      c.addEventListener("keydown", function (ev) {
+        if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); blowOut(c); }
+      });
+    });
+  })();
+</script>
+
+<!-- ==================== END FRAGMENT ==================== -->

@@ -1,0 +1,933 @@
+<!doctype html>
+<!-- ============================================================================
+     RICHARD MILLI · A BIRTHDAY KEEPSAKE · (forest-emerald edition)
+     ============================================================================
+     One page, built by hand. Motion is deliberately restrained — the only two
+     big animated moments are (1) the wax-sealed envelope intro and (2) the
+     candle-blow → confetti payoff. Everything else leans on typography,
+     spacing, and a few slow-drifting ambient particles.
+
+     ALL COLOURS live in the :root custom properties below and are referenced
+     via var() / color-mix() everywhere except :root itself. If you swap the
+     palette, the whole page follows — no hex values to chase down.
+
+     ── WHAT TO CUSTOMISE ──────────────────────────────────────────────────────
+       1. PAINT     → swap the six hexes in :root (bg, bg-2, ink, cream, gold,
+                      coral). Everything else recolours itself.
+       2. GALLERY   → add your real photos, then set data-src="photo-N.jpg" on
+                      the <img> tiles in #gallery (empty data-src keeps the
+                      placeholder tile).
+       3. PARTY     → #details: the When/Where rows, and the countdown target
+                      near the bottom of the <script> (new Date('...')).
+       4. RSVP      → change the mailto: address + subject/body in #details.
+       5. LETTER    → rewrite the paragraphs in #letter; the signature line is
+                      the <span class="sig"> element.
+       6. WISHES    → edit the quotes + names in #wishes.
+       7. CAKE      → the cake is drawn entirely in inline SVG + CSS gradients —
+                      no image files. Plate, tiers, drips and sprinkles are the
+                      svg element with class="cake-art" inside #candles; reshape
+                      the cake by editing its coordinates. The five candles stay
+                      HTML (striped stems, teardrop flames) with the blow-out /
+                      confetti logic untouched; .candles-row { bottom: 69.4% }
+                      parks their bases on the top-tier plateau (y ≈ 104 / 340).
+     ──────────────────────────────────────────────────────────────────────────
+     Fonts: Newsreader (display serif) · Work Sans (body) · Caveat (hand).
+     Confetti: canvas-confetti via CDN — used only for the candle payoff.
+     Reduced motion: every animation is disabled/static when the OS requests.
+     ============================================================================ -->
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Happy Birthday, Richard Milli — a little something real</title>
+  <meta name="description" content="A small, hand-built corner of the internet for Richard's birthday. Open the card — there's a cake in it." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%230E1F17'/%3E%3Cpath d='M8 3l1.6 3.4L13 8l-3.4 1.6L8 13l-1.6-3.4L3 8l3.4-1.6z' fill='%23D9A84E'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=Work+Sans:wght@300;400;500;600&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
+
+  <style>
+    /* ============================== PALETTE ==============================
+       The single source of truth for colour on this page. Everything else
+       references these via var() / color-mix(). */
+    :root {
+      --bg: #0E1F17;
+      --bg-2: #15291F;
+      --ink: #0B160F;
+      --cream: #F6F1E4;
+      --gold: #D9A84E;
+      --coral: #E08A6B;
+
+      /* derived tokens — every one is built from the base palette above */
+      --cream-dim: color-mix(in srgb, var(--cream) 64%, transparent);
+      --cream-faint: color-mix(in srgb, var(--cream) 42%, transparent);
+      --cream-faint2: color-mix(in srgb, var(--cream) 26%, transparent);
+      --gold-soft: color-mix(in srgb, var(--gold) 16%, transparent);
+      --coral-soft: color-mix(in srgb, var(--coral) 16%, transparent);
+      --line: color-mix(in srgb, var(--gold) 14%, transparent);
+      --shadow: color-mix(in srgb, var(--ink) 55%, transparent);
+      --shadow-soft: color-mix(in srgb, var(--ink) 30%, transparent);
+
+      --serif: "Newsreader", Georgia, serif;
+      --sans: "Work Sans", system-ui, sans-serif;
+      --hand: "Caveat", cursive;
+      --max: 1080px;
+      --pad: clamp(1.25rem, 4vw, 2.5rem);
+    }
+
+    /* ============================== BASE ============================== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--cream);
+      font-family: var(--sans);
+      font-weight: 300;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    /* keyboard focus is visible and consistent everywhere */
+    :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+    ::selection { background: color-mix(in srgb, var(--gold) 32%, transparent); }
+
+    /* faint film grain — makes the page feel papery rather than flat.
+       (the SVG rect draws in black by default; no colour literal needed) */
+    body::after {
+      content: "";
+      position: fixed; inset: 0;
+      z-index: 60;
+      pointer-events: none;
+      opacity: 0.05;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+    }
+
+    .wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--pad); }
+    .section { padding-block: clamp(4.5rem, 10vh, 7.5rem); scroll-margin-top: 76px; }
+
+    h1, h2, h3 { font-family: var(--serif); font-weight: 500; text-wrap: balance; }
+    p { text-wrap: pretty; }
+
+    .kicker {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: var(--sans); font-size: 0.72rem; font-weight: 500;
+      letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold);
+    }
+    .kicker::before { content: ""; width: 26px; height: 1px; background: var(--gold); }
+    .section-title { margin-top: 0.9rem; font-size: clamp(1.9rem, 4.2vw, 3rem); line-height: 1.1; }
+
+    /* small ornamental divider between sections */
+    .orn { display: flex; align-items: center; justify-content: center; gap: 14px; color: var(--gold); }
+    .orn::before, .orn::after { content: ""; width: 72px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-soft)); }
+    .orn::after { background: linear-gradient(90deg, var(--gold-soft), transparent); }
+    .orn i { width: 7px; height: 7px; background: var(--gold); transform: rotate(45deg); }
+
+    /* ============================== AMBIENT PARTICLES ==============================
+       A handful of slow-drifting glowing dots. Calm by design — no per-section
+       scroll-triggered choreography. */
+    .ambient { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .dot {
+      position: absolute; bottom: -24vh;
+      width: 3px; height: 3px; border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 16px 5px color-mix(in srgb, var(--gold) 35%, transparent);
+      animation: dot-rise linear infinite;
+    }
+    .dot--coral { background: var(--coral); box-shadow: 0 0 16px 5px color-mix(in srgb, var(--coral) 30%, transparent); }
+    .dot--1 { left: 11%; animation-duration: 34s; animation-delay: -6s; }
+    .dot--2 { left: 27%; width: 2px; height: 2px; animation-duration: 46s; animation-delay: -18s; }
+    .dot--3 { left: 46%; width: 4px; height: 4px; animation-duration: 28s; animation-delay: -3s; }
+    .dot--4 { left: 64%; animation-duration: 52s; animation-delay: -30s; }
+    .dot--5 { left: 81%; width: 2px; height: 2px; animation-duration: 40s; animation-delay: -12s; }
+    .dot--6 { left: 93%; animation-duration: 36s; animation-delay: -24s; }
+
+    @keyframes dot-rise {
+      0%   { transform: translateY(0) scale(0.6); opacity: 0; }
+      14%  { opacity: 0.55; }
+      55%  { opacity: 0.38; }
+      100% { transform: translateY(-135vh) scale(1.05); opacity: 0; }
+    }
+
+    /* ============================== ENVELOPE INTRO ==============================
+       The first "big" animated moment. Click/tap → wax seal fades, flap opens
+       in 3D, the letter rises, then the whole scene fades to reveal the site. */
+    .envelope-scene {
+      position: fixed; inset: 0; z-index: 100;
+      display: grid; place-items: center; align-content: center; gap: 26px;
+      background:
+        radial-gradient(900px 520px at 50% 38%, var(--bg-2) 0%, var(--bg) 62%);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .envelope-scene.gone { opacity: 0; transform: scale(1.04) translateY(-18px); pointer-events: none; }
+
+    .envelope {
+      position: relative;
+      width: min(330px, 82vw); height: 216px;
+      border: 0; padding: 0; background: none; cursor: pointer;
+      perspective: 1100px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .envelope:focus-visible { outline: 2px solid var(--gold); outline-offset: 8px; border-radius: 10px; }
+    .envelope > span { position: absolute; display: block; }
+
+    .env-back {
+      inset: 0; border-radius: 10px;
+      background: linear-gradient(160deg, color-mix(in srgb, var(--bg-2) 88%, var(--gold)), var(--bg-2) 70%);
+      box-shadow: 0 30px 60px -18px var(--shadow), 0 2px 0 var(--gold-soft) inset;
+    }
+    .env-letter {
+      inset: 18px 20px; z-index: 2; border-radius: 7px;
+      background:
+        repeating-linear-gradient(transparent 0 26px, color-mix(in srgb, var(--ink) 6%, transparent) 26px 27px),
+        var(--cream);
+      color: var(--ink);
+      font-family: var(--serif); font-style: italic;
+      display: grid; place-items: center; text-align: center;
+      font-size: 0.95rem; padding: 18px; line-height: 1.7;
+      box-shadow: 0 12px 26px var(--shadow-soft);
+      transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .env-letter small { display: block; margin-top: 10px; font-family: var(--hand); font-style: normal; font-size: 1.3rem; color: var(--coral); }
+    .env-mini { display: block; font-family: var(--sans); font-style: normal; font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; margin-top: 6px; color: var(--coral); }
+    .envelope.open .env-letter { transform: translateY(-86px) rotate(1.5deg); transition-delay: 0.55s; }
+
+    .env-pocket {
+      inset: 0; z-index: 4;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 90%, 0 100%);
+      background: linear-gradient(150deg, color-mix(in srgb, var(--bg-2) 70%, var(--ink)) 0%, var(--bg) 80%);
+    }
+    .env-flap {
+      left: 0; right: 0; top: 0; height: 50%; z-index: 5;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      background: linear-gradient(170deg, color-mix(in srgb, var(--bg-2) 80%, var(--gold)) 0%, var(--bg-2) 100%);
+      transform-origin: top;
+      transform: rotateX(0deg);
+      transition: transform 0.75s cubic-bezier(0.7, 0, 0.25, 1);
+      backface-visibility: hidden;
+    }
+    .envelope.open .env-flap { transform: rotateX(172deg); }
+
+    .seal {
+      left: 50%; top: 50%; z-index: 6;
+      width: 56px; height: 56px; margin: -28px 0 0 -28px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-family: var(--hand); font-weight: 700; font-size: 1.5rem; color: var(--cream);
+      background: radial-gradient(circle at 34% 28%,
+        color-mix(in srgb, var(--coral) 76%, var(--cream)) 0%,
+        var(--coral) 62%,
+        color-mix(in srgb, var(--coral) 68%, var(--ink)));
+      box-shadow: 0 6px 16px var(--shadow), 0 0 0 3px var(--coral-soft), inset 0 0 0 2px color-mix(in srgb, var(--cream) 16%, transparent);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .envelope:hover .seal { transform: scale(1.05); }
+    .envelope.open .seal { transform: scale(0.5); opacity: 0; }
+
+    .env-hint {
+      font-size: 0.78rem; letter-spacing: 0.32em; text-transform: uppercase;
+      color: var(--cream-faint); text-align: center;
+    }
+    .envelope-scene.gone .env-hint { transition: opacity 0.4s; opacity: 0; }
+
+    /* ============================== SITE (hidden until envelope opens) ============================== */
+    .site { position: relative; z-index: 1; opacity: 0; transition: opacity 0.9s ease 0.15s; }
+    body.revealed .site { opacity: 1; }
+
+    /* ============================== NAV ============================== */
+    .nav {
+      position: sticky; top: 0; z-index: 40;
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner {
+      max-width: var(--max); margin: 0 auto;
+      padding-inline: var(--pad);
+      height: 62px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    }
+    .nav-brand { font-family: var(--serif); font-style: italic; font-size: 1.15rem; color: var(--cream); text-decoration: none; }
+    .nav-brand em { color: var(--gold); font-weight: 600; }
+    .nav-links { display: flex; gap: clamp(12px, 3vw, 30px); }
+    .nav-links a {
+      font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--cream-dim); text-decoration: none;
+      transition: color 0.25s ease;
+      padding-block: 6px;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+
+    /* ============================== HERO ============================== */
+    .hero { min-height: calc(100vh - 62px); display: flex; flex-direction: column; justify-content: center; padding-block: clamp(4rem, 10vh, 7rem); }
+    .hero-kicker { font-size: 0.74rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); display: flex; align-items: center; gap: 14px; }
+    .hero-kicker::after { content: ""; width: 46px; height: 1px; background: var(--gold); }
+    .hero h1 {
+      margin-top: 1.5rem;
+      font-size: clamp(3rem, 9vw, 6.4rem);
+      line-height: 1.02;
+      letter-spacing: -0.015em;
+    }
+    .hero h1 em { font-style: italic; font-weight: 400; color: var(--gold); }
+    .hero p.lede {
+      margin-top: 1.6rem; max-width: 46ch;
+      font-size: clamp(1.02rem, 1.6vw, 1.2rem);
+      color: var(--cream-dim);
+    }
+    .hero .go { margin-top: 3rem; font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--cream-faint); }
+
+    /* ============================== MOMENTS / STORY ============================== */
+    .moments { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 3.5vw, 40px); margin-top: 3.4rem; }
+    .moment .num {
+      font-family: var(--serif); font-style: italic; font-size: 1.1rem; color: var(--gold);
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .moment .num::after { content: ""; width: 34px; height: 1px; background: color-mix(in srgb, var(--gold) 45%, transparent); }
+    .moment h3 { margin-top: 0.9rem; font-size: 1.5rem; color: var(--cream); }
+    .moment p { margin-top: 0.7rem; color: var(--cream-dim); font-size: 0.98rem; }
+
+    /* ============================== GALLERY ==============================
+       Mosaic grid: deliberately varied tile sizes. Tiles start as coloured
+       placeholders; real photos replace them via data-src on the <img>. */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-auto-rows: 148px;
+      grid-auto-flow: dense;
+      gap: 14px;
+      margin-top: 3.4rem;
+    }
+    .gallery-item {
+      position: relative; overflow: hidden; border-radius: 16px;
+      background:
+        radial-gradient(120% 120% at 20% 10%, var(--gold-soft) 0%, transparent 55%),
+        radial-gradient(120% 120% at 85% 90%, var(--coral-soft) 0%, transparent 55%),
+        var(--bg-2);
+    }
+    .gallery-item::before {
+      content: "ph. " attr(data-ph);
+      position: absolute; left: 14px; bottom: 10px;
+      font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--cream-faint);
+    }
+    .gallery-item img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      opacity: 0; transition: opacity 0.6s ease;
+    }
+    .gallery-item img.loaded { opacity: 1; }
+    .g--big  { grid-column: span 2; grid-row: span 2; }
+    .g--tall { grid-column: span 1; grid-row: span 2; }
+    .g--wide { grid-column: span 2; grid-row: span 1; }
+
+    /* ============================== LETTER ============================== */
+    .letter-shell { margin-top: 3.2rem; display: flex; justify-content: center; }
+    .letter {
+      position: relative;
+      max-width: 620px;
+      background:
+        repeating-linear-gradient(transparent 0 34px, color-mix(in srgb, var(--ink) 6%, transparent) 34px 35px),
+        var(--cream);
+      color: var(--ink);
+      border-radius: 10px 10px 12px 12px;
+      padding: clamp(2rem, 5vw, 3.4rem);
+      box-shadow: 0 32px 60px -28px var(--shadow), 0 4px 0 var(--gold-soft);
+      transform: rotate(-0.5deg);
+      font-family: var(--serif); font-size: 1.06rem; line-height: 1.9;
+    }
+    /* washi-tape strip pinning the note to the page */
+    .letter::before {
+      content: "";
+      position: absolute; top: -11px; left: 50%;
+      width: 84px; height: 22px; margin-left: -42px;
+      background: color-mix(in srgb, var(--gold) 75%, transparent);
+      box-shadow: 0 2px 4px var(--shadow-soft);
+      transform: rotate(-3deg);
+    }
+    .letter .to { font-family: var(--hand); font-size: 1.8rem; color: var(--coral); margin-bottom: 1.1rem; }
+    .letter p + p { margin-top: 1rem; }
+    .letter .sig {
+      margin-top: 2.2rem;
+      font-family: var(--hand); font-weight: 600; font-size: 2.2rem;
+      color: var(--coral);
+      transform: rotate(-2.5deg);
+      text-align: right;
+    }
+    .letter .sig small { display: block; font-family: var(--sans); font-weight: 400; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: color-mix(in srgb, var(--ink) 60%, transparent); transform: rotate(2.5deg); margin-top: 6px; }
+
+    /* ============================== PARTY DETAILS ============================== */
+    .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 5vw, 60px); margin-top: 3.4rem; align-items: start; }
+    .dl { list-style: none; }
+    .dl li { display: grid; grid-template-columns: 110px 1fr; gap: 18px; padding-block: 13px; border-bottom: 1px solid var(--line); }
+    .dl li:first-child { border-top: 1px solid var(--line); }
+    .dl dt { font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); padding-top: 3px; }
+    .dl dd { color: var(--cream); font-size: 1rem; }
+    .dl dd i { font-style: italic; opacity: 0.75; }
+
+    .countdown h3 { font-size: 1.2rem; color: var(--cream); }
+    .cd-row { display: flex; gap: clamp(12px, 3vw, 24px); margin-top: 1.6rem; }
+    .cd-unit { text-align: left; }
+    .cd-num {
+      font-family: var(--serif); font-size: clamp(2.4rem, 5vw, 3.4rem); line-height: 1;
+      color: var(--gold); font-variant-numeric: tabular-nums;
+      display: block;
+    }
+    .cd-lab { font-size: 0.68rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cream-faint); }
+    .cd-done { margin-top: 1rem; color: var(--gold); font-style: italic; font-family: var(--serif); font-size: 1.1rem; }
+
+    .rsvp {
+      display: inline-block; margin-top: 2.2rem;
+      padding: 15px 34px;
+      font-family: var(--sans); font-weight: 500; font-size: 0.8rem;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--ink);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 84%, var(--cream)) 0%, var(--gold) 100%);
+      border-radius: 99px;
+      text-decoration: none;
+      box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--gold) 50%, transparent);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .rsvp:hover { transform: translateY(-2px); box-shadow: 0 20px 38px -14px color-mix(in srgb, var(--gold) 60%, transparent); }
+
+    /* ============================== CAKE (MAKE A WISH) ==============================
+       The second "big" animated moment. The cake is pure illustrated SVG —
+       plate, two tiers, drips and sprinkles drawn in code, every fill from the
+       palette — while the five candles stay HTML so each can blow out alone.
+       Each blow-out plays a smoke puff; all five → confetti + a "wish locked
+       in" message; relight resets the whole thing. */
+    .cake-shell {
+      background:
+        radial-gradient(70% 90% at 50% 120%, var(--gold-soft) 0%, transparent 60%),
+        var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: clamp(2rem, 5vw, 3.4rem);
+    }
+    @media (max-width: 520px) {
+      .cake-shell { padding: 1.5rem 1.25rem; }
+    }
+    .wish-msg {
+      margin-top: 22px;
+      font-family: var(--serif); font-style: italic; font-size: 1.35rem; color: var(--gold);
+    }
+    .wish-replay { margin-top: 8px; font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--cream-faint); }
+
+    .cake-dir { margin: 26px 0 0; font-size: 0.82rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--cream-dim); }
+    .cake-stage { position: relative; width: min(340px, 100%); margin: 0 auto; aspect-ratio: 1 / 1; }
+
+    /* ---- the illustrated cake: inline SVG, flat + palette-driven ---- */
+    .cake-art { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    .cake-art .halo   { fill: var(--gold); fill-opacity: 0.09; }
+    .cake-art .pillow { fill: var(--ink); fill-opacity: 0.16; }
+    .cake-art .plate  { fill: var(--cream); }
+    .cake-art .plate-lip  { fill: color-mix(in srgb, var(--cream) 82%, var(--ink)); }
+    .cake-art .plate-rim  { fill: none; stroke: var(--gold); stroke-width: 2.5; }
+    .cake-art .plate-well { fill: color-mix(in srgb, var(--cream) 88%, var(--ink)); fill-opacity: 0.45; }
+    .cake-art .body   { fill: color-mix(in srgb, var(--cream) 90%, var(--ink)); }
+    .cake-art .foot   { fill: color-mix(in srgb, var(--cream) 78%, var(--ink)); }
+    .cake-art .band   { fill: var(--gold); }
+    .cake-art .slab, .cake-art .drip { fill: var(--cream); }
+    .cake-art .sprk   { fill: var(--gold); }
+    .cake-art .sprk.c { fill: var(--coral); }
+
+    /* ---- candles: bases parked on the top tier's frosting plateau
+            (bottom: 69.4% ⇒ stems sit on the y ≈ 104 / 340 line) ---- */
+    .candles-row {
+      position: absolute; bottom: 69.4%; left: 50%; transform: translateX(-50%);
+      width: 160px; display: flex; justify-content: space-between; align-items: flex-end;
+      z-index: 2;
+    }
+    .candle {
+      position: relative; width: 22px; height: 60px; cursor: pointer;
+      -webkit-tap-highlight-color: transparent; outline-offset: 4px;
+    }
+    .candle:focus-visible { outline: 2px solid var(--gold); border-radius: 8px; }
+    .candle.out { cursor: default; pointer-events: none; }
+    .candle.out .stem { filter: brightness(0.6) saturate(0.7); }
+    .stem {
+      position: absolute; top: 25px; left: 2.5px; right: 2.5px; bottom: 0;
+      border-radius: 3px 3px 6px 6px;
+      background:
+        linear-gradient(180deg, var(--cream) 0 7px, transparent 7px),
+        repeating-linear-gradient(180deg, var(--coral) 0 7px, var(--cream) 7px 14px);
+      box-shadow: inset -1px 0 2px color-mix(in srgb, var(--ink) 22%, transparent), 0 2px 3px var(--shadow);
+    }
+    .candle:nth-child(odd) .stem {
+      background:
+        linear-gradient(180deg, var(--cream) 0 7px, transparent 7px),
+        repeating-linear-gradient(180deg, var(--gold) 0 7px, var(--cream) 7px 14px);
+    }
+    .wick { position: absolute; top: 19px; left: 50%; width: 2.5px; height: 7px; margin-left: -1.25px; border-radius: 1px; background: var(--ink); }
+
+    /* teardrop flame, warm glow, gentle scale/rotate flicker — not a flash */
+    .flame {
+      position: absolute; top: 0; left: 50%; width: 14px; height: 24px; margin-left: -7px;
+      border-radius: 56% 56% 50% 50% / 64% 64% 42% 42%;
+      background: radial-gradient(circle at 50% 28%,
+        color-mix(in srgb, var(--gold) 45%, var(--cream)) 0%,
+        color-mix(in srgb, var(--gold) 82%, var(--cream)) 32%,
+        color-mix(in srgb, var(--coral) 85%, var(--cream)) 60%,
+        transparent 78%);
+      transform-origin: 50% 100%;
+      box-shadow:
+        0 0 18px 8px color-mix(in srgb, var(--gold) 30%, transparent),
+        0 0 34px 18px color-mix(in srgb, var(--gold) 14%, transparent);
+      animation: candle-flicker 1.5s ease-in-out infinite;
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+    @keyframes candle-flicker {
+      0%, 100% { transform: scaleY(1) rotate(-1.4deg); }
+      25%      { transform: scaleY(1.09) rotate(0.9deg) translateX(0.4px); }
+      50%      { transform: scaleY(0.93) rotate(-0.7deg) translateX(-0.5px); }
+      75%      { transform: scaleY(1.05) rotate(1.5deg) translateX(0.3px); }
+    }
+    .candle.out .flame { animation: none; opacity: 0; transform: scale(0.35) translateY(3px) rotate(-12deg); }
+
+    /* blown-out smoke: three short puffs that rise an fade (~1s) */
+    .smoke {
+      position: absolute; top: 3px; left: 50%; width: 9px; height: 18px; margin-left: -4.5px;
+      border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--cream) 45%, transparent) 0%, transparent 70%);
+      opacity: 0; pointer-events: none;
+    }
+    .candle.out .smoke { animation: candle-puff 1.1s ease-out forwards; }
+    .candle.out .s1 { --dx: -4px; animation-delay: 0s; }
+    .candle.out .s2 { --dx: 3px;  animation-delay: 0.13s; }
+    .candle.out .s3 { --dx: -1px; animation-delay: 0.24s; }
+    @keyframes candle-puff {
+      0%   { opacity: 0; transform: translate(0, 0) scale(0.5); }
+      25%  { opacity: 0.55; }
+      60%  { opacity: 0.35; transform: translate(var(--dx, 0), -18px) scale(1.1); }
+      100% { opacity: 0; transform: translate(var(--dx, 0), -34px) scale(1.45); }
+    }
+
+    .relight {
+      margin-top: 26px; padding: 9px 18px;
+      font: 500 0.76rem var(--sans); letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--cream); background: transparent;
+      border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent); border-radius: 99px; cursor: pointer;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+    .relight:hover { background: var(--gold); color: var(--ink); }
+
+    /* ============================== WISHES WALL ============================== */
+    .wishes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: clamp(16px, 2.5vw, 26px); margin-top: 3.4rem; }
+    .wish-note {
+      position: relative;
+      background: var(--cream);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 1.6rem 1.4rem 1.4rem;
+      font-family: var(--serif); font-size: 0.98rem; line-height: 1.7;
+      box-shadow: 0 22px 40px -26px var(--shadow);
+    }
+    .wish-note::before {
+      content: "";
+      position: absolute; top: -9px; left: 50%; width: 62px; height: 18px; margin-left: -31px;
+      background: color-mix(in srgb, var(--coral) 60%, transparent);
+      box-shadow: 0 1px 3px var(--shadow-soft);
+      transform: rotate(-3deg);
+    }
+    .wish-note .who { display: block; margin-top: 0.9rem; font-family: var(--hand); font-size: 1.35rem; color: var(--coral); }
+    .wish-note:nth-child(2) { transform: rotate(1.4deg); }
+    .wish-note:nth-child(3) { transform: rotate(-1.6deg); margin-top: 10px; }
+    .wish-note:nth-child(4) { transform: rotate(1.1deg); }
+
+    /* ============================== CLOSING + FOOTER ============================== */
+    .closing { text-align: center; padding-block: clamp(5rem, 12vh, 8rem); }
+    .closing h2 { font-size: clamp(2rem, 5vw, 3.6rem); line-height: 1.12; }
+    .closing h2 em { font-style: italic; font-weight: 400; color: var(--gold); }
+    .closing p { margin-top: 1.4rem; color: var(--cream-dim); }
+
+    footer { border-top: 1px solid var(--line); }
+    .footer-inner {
+      max-width: var(--max); margin: 0 auto; padding: 2.2rem var(--pad);
+      display: flex; flex-wrap: wrap; gap: 8px 26px; align-items: baseline; justify-content: space-between;
+      font-size: 0.8rem; color: var(--cream-faint); letter-spacing: 0.04em;
+    }
+    footer .foot-love { font-family: var(--hand); font-size: 1.25rem; color: var(--gold); letter-spacing: 0; }
+    footer .foot-credit { color: var(--cream-faint2); }
+
+    /* ============================== RESPONSIVE ============================== */
+    @media (max-width: 860px) {
+      .moments { grid-template-columns: 1fr; }
+      .moment + .moment { margin-top: 0.4rem; }
+      .details-grid { grid-template-columns: 1fr; }
+      .wishes-grid { grid-template-columns: 1fr 1fr; }
+      .gallery { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 120px; gap: 10px; }
+    }
+    @media (max-width: 480px) {
+      .wishes-grid { grid-template-columns: 1fr; }
+      .nav-links { gap: 12px; }
+      .dl li { grid-template-columns: 92px 1fr; gap: 12px; }
+    }
+
+    /* ============================== REDUCED MOTION ==============================
+       Every animation on the page is gated through this block. Envelope-opening
+       is skipped entirely in JS when the OS asks for less motion. */
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .dot { animation: none; bottom: 40vh; opacity: 0.3; }
+      .flame { animation: none; }
+      .candle.out .smoke { animation: none; opacity: 0; }
+      .candle.out .flame { transition: none; }
+      .envelope-scene, .envelope.open .env-letter, .envelope.open .env-flap, .envelope.open .seal { transition: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ambient background: a few slow-drifting glowing dots, nothing more -->
+  <div class="ambient" aria-hidden="true">
+    <span class="dot dot--1"></span>
+    <span class="dot dot--2 dot--coral"></span>
+    <span class="dot dot--3"></span>
+    <span class="dot dot--4 dot--coral"></span>
+    <span class="dot dot--5"></span>
+    <span class="dot dot--6"></span>
+  </div>
+
+  <!-- ======================= ENVELOPE INTRO ======================= -->
+  <div class="envelope-scene" id="envelopeScene">
+    <button class="envelope" id="envelope" type="button" aria-label="Open the birthday card">
+      <span class="env-back"></span>
+      <span class="env-letter">For Richard<span class="env-mini">on your day</span><small>Happy birthday</small></span>
+      <span class="env-pocket"></span>
+      <span class="env-flap"></span>
+      <span class="seal">RM</span>
+    </button>
+    <p class="env-hint">Tap the seal to open</p>
+  </div>
+
+  <div class="site" id="site">
+    <!-- ======================= NAV ======================= -->
+    <header class="nav">
+      <div class="nav-inner">
+        <a class="nav-brand" href="#top">For <em>Richard</em></a>
+        <nav class="nav-links" aria-label="Sections">
+          <a href="#story">Story</a>
+          <a href="#gallery">Gallery</a>
+          <a href="#details">Details</a>
+          <a href="#wishes">Wishes</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- ======================= HERO ======================= -->
+      <section class="wrap hero">
+        <p class="hero-kicker">September 2026 &nbsp;·&nbsp; for Richard Milli</p>
+        <h1>Happy <em>birthday</em>,<br />Richard.</h1>
+        <p class="lede">A small corner of the internet, built by hand for the person who makes every room a little warmer. Blow out the candles, read the words, and please — RSVP.</p>
+        <p class="go">Keep going &darr; there's a cake at the bottom</p>
+      </section>
+
+      <div class="orn" aria-hidden="true"><i></i></div>
+
+      <!-- ======================= MOMENTS / STORY ======================= -->
+      <section class="section wrap" id="story">
+        <span class="kicker">Three frames</span>
+        <h2 class="section-title">A few things we'd say,<br />if we weren't all talking at once.</h2>
+        <div class="moments">
+          <div class="moment">
+            <span class="num">i</span>
+            <h3>Where it started</h3>
+            <p>Somewhere between a packed inbox and a standing Friday plan, there was always room for one more story. That's the part we remember clearest — you showing up.</p>
+          </div>
+          <div class="moment">
+            <span class="num">ii</span>
+            <h3>Who he's become</h3>
+            <p>Calmer on the outside, just as unstoppable underneath. Still the first to laugh, still holding the door open, still quietly generous with the last slice.</p>
+          </div>
+          <div class="moment">
+            <span class="num">iii</span>
+            <h3>What's next</h3>
+            <p>Whatever you're pointed at this year, we're already on the list. One more lap around the sun — and somehow the best chapters keep landing ahead of you.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="orn" aria-hidden="true"><i></i></div>
+
+      <!-- ======================= GALLERY ======================= -->
+      <section class="section wrap" id="gallery">
+        <span class="kicker">The gallery</span>
+        <h2 class="section-title">Years, in no particular order.</h2>
+        <div class="gallery">
+          <figure class="gallery-item g--big" data-ph="1"><img data-src="photo-1.jpg" alt="[Richard — a favourite photo]" loading="lazy" /></figure>
+          <figure class="gallery-item" data-ph="2"><img data-src="" alt="[Richard, somewhere sunny]" loading="lazy" /></figure>
+          <figure class="gallery-item g--tall" data-ph="3"><img data-src="" alt="[Richard, caught mid-laugh]" loading="lazy" /></figure>
+          <figure class="gallery-item" data-ph="4"><img data-src="" alt="[Richard, out somewhere]" loading="lazy" /></figure>
+          <figure class="gallery-item g--wide" data-ph="5"><img data-src="" alt="[Richard, with friends]" loading="lazy" /></figure>
+          <figure class="gallery-item" data-ph="6"><img data-src="" alt="[Richard — a quiet moment]" loading="lazy" /></figure>
+          <figure class="gallery-item" data-ph="7"><img data-src="" alt="[Richard, unimpressed by something]" loading="lazy" /></figure>
+          <figure class="gallery-item" data-ph="8"><img data-src="" alt="[Richard, at his best]" loading="lazy" /></figure>
+        </div>
+      </section>
+
+      <div class="orn" aria-hidden="true"><i></i></div>
+
+      <!-- ======================= LETTER ======================= -->
+      <section class="section wrap" id="letter">
+        <span class="kicker">A note for you</span>
+        <h2 class="section-title">From us, on paper,<br />the old-fashioned way.</h2>
+        <div class="letter-shell">
+          <article class="letter">
+            <p class="to">Dear Richard —</p>
+            <p>Some people fill a room; you somehow make it feel safer. We've lost count of the nights that were only meant to be "a quick one" until you sat down — and then suddenly it's midnight, and nobody's bored, and nobody wants to leave.</p>
+            <p>You have that quiet skill of making people feel properly seen: remembering the small things, sending the right link at the right time, showing up before you're ever asked. That's not a habit. That's just who you are.</p>
+            <p>So here's another lap around the sun. May this year be everything you've quietly been pointing at — and even the parts none of us can predict, may they turn out better than advertised. We'll be there either way, with candles on standby.</p>
+            <p class="sig">— everyone who loves you<small>happy birthday, Richard</small></p>
+          </article>
+        </div>
+      </section>
+
+      <div class="orn" aria-hidden="true"><i></i></div>
+
+      <!-- ======================= PARTY DETAILS ======================= -->
+      <section class="section wrap" id="details">
+        <span class="kicker">The party</span>
+        <h2 class="section-title">Details worth saving.</h2>
+        <div class="details-grid">
+          <ul class="dl">
+            <li><dt>When</dt><dd>Monday, 28 September 2026 &middot; 7:30 PM</dd></li>
+            <li><dt>Where</dt><dd><i>[Venue or address goes here]</i></dd></li>
+            <li><dt>Dress code</dt><dd>Smart-casual. Gold encouraged, average jokes discouraged.</dd></li>
+            <li><dt>Bring</dt><dd>Yourself, an empty stomach, and the good stories.</dd></li>
+          </ul>
+          <div class="countdown">
+            <h3>Until we light the candles again —</h3>
+            <div class="cd-row" id="countdown">
+              <div class="cd-unit"><span class="cd-num" id="cdD">&ndash;</span><span class="cd-lab">days</span></div>
+              <div class="cd-unit"><span class="cd-num" id="cdH">&ndash;</span><span class="cd-lab">hours</span></div>
+              <div class="cd-unit"><span class="cd-num" id="cdM">&ndash;</span><span class="cd-lab">minutes</span></div>
+              <div class="cd-unit"><span class="cd-num" id="cdS">&ndash;</span><span class="cd-lab">seconds</span></div>
+            </div>
+            <p class="cd-done" id="cdDone" hidden>That's tonight. See you there — don't be late.</p>
+            <a class="rsvp" href="mailto:rsvp@example.com?subject=RSVP%20%E2%80%94%20Richard%27s%20birthday&body=Name%3A%0AComing%3A%20yes%20%2F%20maybe%0A%0A(diet%2Fmusic%20requests%20welcome)" aria-label="RSVP to Richard's birthday party">RSVP &mdash; I'm in</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="orn" aria-hidden="true"><i></i></div>
+
+      <!-- ======================= MAKE A WISH (CAKE) ======================= -->
+      <section class="section wrap" id="cake">
+        <div class="cake-shell">
+          <section class="cake-inner" id="candles" aria-label="Make a wish. Blow out all five candles to lock in your wish.">
+            <span class="kicker">Make a wish</span>
+            <h2 class="section-title">Blow out all five,<br />one tap at a time.</h2>
+            <div class="cake-stage">
+              <svg class="cake-art" viewBox="0 0 340 340" aria-hidden="true" focusable="false">
+                <ellipse class="halo" cx="170" cy="158" rx="132" ry="128" />
+                <ellipse class="pillow" cx="170" cy="304" rx="140" ry="24" />
+                <ellipse class="plate-lip" cx="170" cy="300" rx="137" ry="27" />
+                <ellipse class="plate" cx="170" cy="297" rx="137" ry="27" />
+                <ellipse class="plate-rim" cx="170" cy="297" rx="137" ry="27" />
+                <ellipse class="plate-well" cx="170" cy="302" rx="102" ry="15" />
+                <ellipse class="pillow" cx="170" cy="296" rx="128" ry="10" />
+                <rect class="body" x="46" y="222" width="248" height="74" rx="14" />
+                <rect class="band" x="46" y="248" width="248" height="9" rx="4" />
+                <rect class="foot" x="46" y="268" width="248" height="28" rx="14" />
+                <rect class="slab" x="40" y="198" width="260" height="24" rx="11" />
+                <ellipse class="drip" cx="54" cy="224" rx="9" ry="7" />
+                <ellipse class="drip" cx="78" cy="221" rx="10" ry="8" />
+                <ellipse class="drip" cx="102" cy="224" rx="9" ry="7" />
+                <ellipse class="drip" cx="130" cy="221" rx="10" ry="8" />
+                <ellipse class="drip" cx="158" cy="224" rx="9" ry="7" />
+                <ellipse class="drip" cx="184" cy="221" rx="10" ry="8" />
+                <ellipse class="drip" cx="210" cy="224" rx="9" ry="7" />
+                <ellipse class="drip" cx="238" cy="221" rx="10" ry="8" />
+                <ellipse class="drip" cx="262" cy="224" rx="9" ry="7" />
+                <ellipse class="drip" cx="286" cy="221" rx="10" ry="8" />
+                <ellipse class="pillow" cx="170" cy="198" rx="80" ry="6" />
+                <rect class="body" x="98" y="126" width="144" height="72" rx="12" />
+                <rect class="band" x="98" y="148" width="144" height="8" rx="4" />
+                <rect class="foot" x="98" y="170" width="144" height="28" rx="12" />
+                <rect class="slab" x="88" y="104" width="164" height="22" rx="10" />
+                <ellipse class="drip" cx="108" cy="128" rx="8" ry="7" />
+                <ellipse class="drip" cx="128" cy="128" rx="8" ry="7" />
+                <ellipse class="drip" cx="148" cy="128" rx="8" ry="7" />
+                <ellipse class="drip" cx="168" cy="128" rx="8" ry="7" />
+                <ellipse class="drip" cx="188" cy="128" rx="8" ry="7" />
+                <ellipse class="drip" cx="208" cy="128" rx="8" ry="7" />
+                <ellipse class="drip" cx="228" cy="128" rx="8" ry="7" />
+                <ellipse class="drip" cx="248" cy="128" rx="8" ry="7" />
+                <rect class="sprk" x="112" y="105" width="12" height="4" rx="2" transform="rotate(26 118 107)" />
+                <rect class="sprk c" x="147" y="106" width="11" height="4" rx="2" transform="rotate(-20 152 108)" />
+                <rect class="sprk" x="183" y="105" width="12" height="4" rx="2" transform="rotate(30 189 107)" />
+              </svg>
+              <div class="candles-row">
+                <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 1 of 5"><span class="smoke s1"></span><span class="smoke s2"></span><span class="smoke s3"></span><span class="flame"></span><span class="wick"></span><span class="stem"></span></div>
+                <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 2 of 5"><span class="smoke s1"></span><span class="smoke s2"></span><span class="smoke s3"></span><span class="flame"></span><span class="wick"></span><span class="stem"></span></div>
+                <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 3 of 5"><span class="smoke s1"></span><span class="smoke s2"></span><span class="smoke s3"></span><span class="flame"></span><span class="wick"></span><span class="stem"></span></div>
+                <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 4 of 5"><span class="smoke s1"></span><span class="smoke s2"></span><span class="smoke s3"></span><span class="flame"></span><span class="wick"></span><span class="stem"></span></div>
+                <div class="candle" role="button" tabindex="0" aria-label="Blow out candle 5 of 5"><span class="smoke s1"></span><span class="smoke s2"></span><span class="smoke s3"></span><span class="flame"></span><span class="wick"></span><span class="stem"></span></div>
+              </div>
+            </div>
+            <p class="cake-dir">Tap each flame. When they're all out — that's your wish.</p>
+            <p class="wish-msg" id="wishMsg" role="status" hidden>Wish locked in. Here's to a year of hitting every green light.</p>
+            <p class="wish-replay" id="wishReplay" hidden>Want another? Just relight the candles.</p>
+            <button type="button" class="relight" hidden>Light the candles again</button>
+          </section>
+        </div>
+      </section>
+
+      <!-- ======================= WISHES WALL ======================= -->
+      <section class="section wrap" id="wishes">
+        <span class="kicker">The wishes wall</span>
+        <h2 class="section-title">From the people who'll<br />say it to your face anyway.</h2>
+        <div class="wishes-grid">
+          <blockquote class="wish-note">To the years we've laughed through and the ones still waiting to happen. <cite class="who">— Debra</cite></blockquote>
+          <blockquote class="wish-note">You make ordinary days feel like weekends. Please never change. <cite class="who">— Sam</cite></blockquote>
+          <blockquote class="wish-note">Another year of your playlists, your terrible puns, and your excellent timing. <cite class="who">— Alex</cite></blockquote>
+          <blockquote class="wish-note">Some people just collect years. You make each one count. <cite class="who">— Gran</cite></blockquote>
+        </div>
+      </section>
+
+      <!-- ======================= CLOSING ======================= -->
+      <div class="wrap closing">
+        <h2>Here's to you, Richard &mdash;<br /><em>the candles are yours now.</em></h2>
+        <p>Everything on this page was made for one person on one day.<br />Don't let that stop you from celebrating a week late.</p>
+      </div>
+    </main>
+
+    <footer>
+      <div class="footer-inner">
+        <span>Made by hand, for Richard's birthday &middot; September 2026</span>
+        <span class="foot-credit">Cake drawn by hand, in code</span>
+        <span class="foot-love">Rather a lot of love went into this.</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      /* ============= ENVELOPE → REVEAL ============= */
+      var scene = document.getElementById("envelopeScene");
+      var env = document.getElementById("envelope");
+
+      function reveal() {
+        document.body.classList.add("revealed");
+        if (scene) {
+          scene.classList.add("gone");
+          setTimeout(function () { scene.style.display = "none"; }, 700);
+        }
+      }
+
+      // with reduced motion the envelope never animates; go straight in
+      if (reduceMotion) {
+        env.style.display = "none";
+        reveal();
+      } else {
+        env.addEventListener("click", function () {
+          if (env.classList.contains("open")) return;
+          env.classList.add("open");          // flap + seal fade via CSS
+          setTimeout(reveal, 2100);           // let the letter rise, then go
+        });
+      }
+
+      /* ============= GALLERY (real photos in, placeholders out) ============= */
+      document.querySelectorAll(".gallery-item img").forEach(function (img) {
+        var src = img.getAttribute("data-src");
+        if (!src) return;
+        img.addEventListener("load", function () { img.classList.add("loaded"); });
+        img.addEventListener("error", function () { img.removeAttribute("src"); });
+        img.src = src;
+      });
+
+      /* ============= COUNTDOWN ============= */
+      var target = new Date("2026-09-28T19:30:00");   // ← set the party moment here
+      var cd = { d: document.getElementById("cdD"), h: document.getElementById("cdH"), m: document.getElementById("cdM"), s: document.getElementById("cdS") };
+      var cdDone = document.getElementById("cdDone");
+      var pad = function (n) { return String(n).padStart(2, "0"); };
+      setInterval(function () {
+        var diff = target.getTime() - Date.now();
+        if (diff <= 0) {
+          cdDone.hidden = false;
+          return;
+        }
+        cd.d.textContent = Math.floor(diff / 86400000);
+        cd.h.textContent = pad(Math.floor(diff / 3600000) % 24);
+        cd.m.textContent = pad(Math.floor(diff / 60000) % 60);
+        cd.s.textContent = pad(Math.floor(diff / 1000) % 60);
+      }, 250);
+
+      /* ============= CAKE + CONFETTI PAYOFF ============= */
+      // confetti colours are read straight from the CSS palette, so they
+      // always match the theme (no duplicated hex values anywhere)
+      function confettiColors() {
+        var get = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
+        return [get("--cream"), get("--gold"), get("--coral")];
+      }
+      function fireConfetti() {
+        if (typeof confetti !== "function") return;
+        var colors = confettiColors();
+        var end = Date.now() + 1700;
+        (function frame() {
+          confetti({ particleCount: 4, angle: 60, spread: 62, origin: { x: 0, y: 0.75 }, colors: colors });
+          confetti({ particleCount: 4, angle: 120, spread: 62, origin: { x: 1, y: 0.75 }, colors: colors });
+          if (Date.now() < end) requestAnimationFrame(frame);
+        })();
+      }
+
+      var cake = document.getElementById("candles");
+      var candles = Array.prototype.slice.call(cake.querySelectorAll(".candle"));
+      var relightBtn = cake.querySelector(".relight");
+      var wishMsg = document.getElementById("wishMsg");
+      var wishReplay = document.getElementById("wishReplay");
+      var locked = false;
+
+      cake.addEventListener("click", function (ev) {
+        var c = ev.target.closest ? ev.target.closest(".candle") : null;
+        if (c && !c.classList.contains("out")) {
+          c.classList.add("out");             // flame dies + smoke plays via CSS
+          if (candles.every(function (x) { return x.classList.contains("out"); })) {
+            locked = true;
+            relightBtn.hidden = false;
+            wishMsg.hidden = false;
+            wishReplay.hidden = false;
+            cake.dispatchEvent(new CustomEvent("allCandlesOut"));
+            fireConfetti();
+          }
+        } else if (relightBtn && ev.target === relightBtn) {
+          candles.forEach(function (x) { x.classList.remove("out"); });
+          locked = false;
+          relightBtn.hidden = true;
+          wishMsg.hidden = true;
+          wishReplay.hidden = true;
+          cake.dispatchEvent(new CustomEvent("candlesRelit"));
+        }
+      });
+
+      // keyboard parity for the candle "buttons" (Enter / Space)
+      candles.forEach(function (c) {
+        c.addEventListener("keydown", function (ev) {
+          if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); c.click(); }
+        });
+      });
+
+      /* ============= SCROLLSPY ============= */
+      var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a[href^="#"]'));
+      var sections = links.map(function (a) { return document.querySelector(a.getAttribute("href")); }).filter(Boolean);
+      if ("IntersectionObserver" in window && sections.length) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var id = entry.target.id;
+            links.forEach(function (a) {
+              a.classList.toggle("active", a.getAttribute("href") === "#" + id);
+            });
+          });
+        }, { rootMargin: "-40% 0px -55% 0px" });
+        sections.forEach(function (s) { spy.observe(s); });
+      }
+    })();
+  </script>
+</body>
+</html>
