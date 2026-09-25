@@ -12,9 +12,8 @@
      palette, the whole page follows — no hex values to chase down.
 
      ── WHAT TO CUSTOMISE ──────────────────────────────────────────────────────
-       1. PAINT     → swap the hexes in :root (bg, bg-2, ink, cream, gold,
-                      coral, head). Everything else recolours itself; --head
-                      is the light-green heading colour on the white page.
+       1. PAINT     → swap the six hexes in :root (bg, bg-2, ink, cream, gold,
+                      coral). Everything else recolours itself.
        2. GALLERY   → drop real files into /images/ as photo-1.jpg … photo-8.jpg
                       and they appear in the grid + lightbox on their own; the
                       tiles stay palette placeholders until the files exist.
@@ -44,7 +43,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Happy Birthday, Richard Milli — a little something real</title>
   <meta name="description" content="A small, hand-built corner of the internet for Richard's birthday. Open the card — there's a cake in it." />
-  <meta name="theme-color" content="#FFFFFF" />
+  <meta name="theme-color" content="#0E1F17" />
   <meta property="og:title" content="Happy Birthday, Richard Milli" />
   <meta property="og:description" content="A small, hand-built corner of the internet for Richard's birthday. Open the card — there's a cake in it." />
   <meta property="og:type" content="website" />
@@ -61,14 +60,12 @@
        The single source of truth for colour on this page. Everything else
        references these via var() / color-mix(). */
     :root {
-      /* base palette — swap any hex here and the whole theme follows */
-      --bg: #FFFFFF;         /* page background — white */
-      --bg-2: #F3F6EE;       /* raised surfaces — pale sage */
-      --ink: #0D0D0D;        /* deepest tone — black (shadows, paper text) */
-      --cream: #151719;      /* main text — near-black */
-      --gold: #D9A84E;       /* warm accent — gold */
-      --coral: #E08A6B;      /* warm accent — coral */
-      --head: #3E9B4F;       /* headings — light green on the white page */
+      --bg: #0E1F17;
+      --bg-2: #15291F;
+      --ink: #0B160F;
+      --cream: #F6F1E4;
+      --gold: #D9A84E;
+      --coral: #E08A6B;
 
       /* derived tokens — every one is built from the base palette above */
       --cream-dim: color-mix(in srgb, var(--cream) 64%, transparent);
@@ -129,7 +126,7 @@
     .wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--pad); }
     .section { padding-block: clamp(4.5rem, 10vh, 7.5rem); scroll-margin-top: 76px; }
 
-    h1, h2, h3 { font-family: var(--serif); font-weight: 500; text-wrap: balance; color: var(--head); }
+    h1, h2, h3 { font-family: var(--serif); font-weight: 500; text-wrap: balance; }
     p { text-wrap: pretty; }
 
     .kicker {
@@ -203,7 +200,7 @@
       inset: 18px 20px; z-index: 2; border-radius: 7px;
       background:
         repeating-linear-gradient(transparent 0 26px, color-mix(in srgb, var(--ink) 6%, transparent) 26px 27px),
-        var(--bg);
+        var(--cream);
       color: var(--ink);
       font-family: var(--serif); font-style: italic;
       display: grid; place-items: center; text-align: center;
@@ -236,12 +233,12 @@
       width: 56px; height: 56px; margin: -28px 0 0 -28px;
       border-radius: 50%;
       display: grid; place-items: center;
-      font-family: var(--hand); font-weight: 700; font-size: 1.5rem; color: var(--bg);
+      font-family: var(--hand); font-weight: 700; font-size: 1.5rem; color: var(--cream);
       background: radial-gradient(circle at 34% 28%,
-        color-mix(in srgb, var(--coral) 76%, var(--bg)) 0%,
+        color-mix(in srgb, var(--coral) 76%, var(--cream)) 0%,
         var(--coral) 62%,
         color-mix(in srgb, var(--coral) 68%, var(--ink)));
-      box-shadow: 0 6px 16px var(--shadow), 0 0 0 3px var(--coral-soft), inset 0 0 0 2px color-mix(in srgb, var(--bg) 16%, transparent);
+      box-shadow: 0 6px 16px var(--shadow), 0 0 0 3px var(--coral-soft), inset 0 0 0 2px color-mix(in srgb, var(--cream) 16%, transparent);
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
     .envelope:hover .seal { transform: scale(1.05); }
@@ -330,7 +327,7 @@
       display: inline-flex; align-items: center; gap: 10px;
     }
     .moment .num::after { content: ""; width: 34px; height: 1px; background: color-mix(in srgb, var(--gold) 45%, transparent); }
-    .moment h3 { margin-top: 0.9rem; font-size: 1.5rem; color: var(--head); }
+    .moment h3 { margin-top: 0.9rem; font-size: 1.5rem; color: var(--cream); }
     .moment p { margin-top: 0.7rem; color: var(--cream-dim); font-size: 0.98rem; }
 
     /* ============================== GALLERY ==============================
@@ -373,7 +370,7 @@
       max-width: 620px;
       background:
         repeating-linear-gradient(transparent 0 34px, color-mix(in srgb, var(--ink) 6%, transparent) 34px 35px),
-        var(--bg);
+        var(--cream);
       color: var(--ink);
       border-radius: 10px 10px 12px 12px;
       padding: clamp(2rem, 5vw, 3.4rem);
@@ -410,7 +407,7 @@
     .dl dd { color: var(--cream); font-size: 1rem; }
     .dl dd i { font-style: italic; opacity: 0.75; }
 
-    .countdown h3 { font-size: 1.2rem; color: var(--head); }
+    .countdown h3 { font-size: 1.2rem; color: var(--cream); }
     .cd-row { display: flex; gap: clamp(12px, 3vw, 24px); margin-top: 1.6rem; }
     .cd-unit { text-align: left; }
     .cd-num {
@@ -427,7 +424,7 @@
       font-family: var(--sans); font-weight: 500; font-size: 0.8rem;
       letter-spacing: 0.22em; text-transform: uppercase;
       color: var(--ink);
-      background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 84%, var(--bg)) 0%, var(--gold) 100%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 84%, var(--cream)) 0%, var(--gold) 100%);
       border-radius: 99px;
       text-decoration: none;
       box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--gold) 50%, transparent);
@@ -1292,7 +1289,7 @@
       // always match the theme (no duplicated hex values anywhere)
       function confettiColors() {
         var get = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
-        return [get("--gold"), get("--coral"), get("--bg-2")];
+        return [get("--cream"), get("--gold"), get("--coral")];
       }
       function fireConfetti() {
         if (typeof confetti !== "function") return;
