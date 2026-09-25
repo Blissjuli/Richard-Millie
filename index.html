@@ -12,18 +12,20 @@
      palette, the whole page follows — no hex values to chase down.
 
      ── WHAT TO CUSTOMISE ──────────────────────────────────────────────────────
-       1. PAINT     → swap the six hexes in :root (bg, bg-2, ink, cream, gold,
-                      coral). Everything else recolours itself.
-       2. GALLERY   → add your real photos, then set data-src="photo-N.jpg" on
-                      the <img> tiles in #gallery (empty data-src keeps the
-                      placeholder tile).
-       3. PARTY     → #details: the When/Where rows, and the countdown target
-                      near the bottom of the <script> (new Date('...')).
-       4. RSVP      → change the mailto: address + subject/body in #details.
-       5. LETTER    → rewrite the paragraphs in #letter; the signature line is
+       1. PAINT     → swap the hexes in :root (bg, bg-2, ink, cream, gold,
+                      coral, head). Everything else recolours itself; --head
+                      is the light-green heading colour on the white page.
+       2. GALLERY   → drop real files into /images/ as photo-1.jpg … photo-8.jpg
+                      and they appear in the grid + lightbox on their own; the
+                      tiles stay palette placeholders until the files exist.
+       3. PARTY+RSVP → all party details live in the CONFIG block at the top of
+                      the <script> near the bottom of this file: the date, the
+                      venue, and the Formspree RSVP endpoint (swap in your real
+                      formspree.io ID once the form is created).
+       4. LETTER    → rewrite the paragraphs in #letter; the signature line is
                       the <span class="sig"> element.
-       6. WISHES    → edit the quotes + names in #wishes.
-       7. CAKE      → the cake is drawn entirely in inline SVG + CSS gradients —
+       5. WISHES    → edit the quotes + names in #wishes.
+       6. CAKE      → the cake is drawn entirely in inline SVG + CSS gradients —
                       no image files. Plate, tiers, drips and sprinkles are the
                       svg element with class="cake-art" inside #candles; reshape
                       the cake by editing its coordinates. The five candles stay
@@ -42,6 +44,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Happy Birthday, Richard Milli — a little something real</title>
   <meta name="description" content="A small, hand-built corner of the internet for Richard's birthday. Open the card — there's a cake in it." />
+  <meta name="theme-color" content="#FFFFFF" />
+  <meta property="og:title" content="Happy Birthday, Richard Milli" />
+  <meta property="og:description" content="A small, hand-built corner of the internet for Richard's birthday. Open the card — there's a cake in it." />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_GB" />
+  <meta name="twitter:card" content="summary" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%230E1F17'/%3E%3Cpath d='M8 3l1.6 3.4L13 8l-3.4 1.6L8 13l-1.6-3.4L3 8l3.4-1.6z' fill='%23D9A84E'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -53,12 +61,14 @@
        The single source of truth for colour on this page. Everything else
        references these via var() / color-mix(). */
     :root {
-      --bg: #0E1F17;
-      --bg-2: #15291F;
-      --ink: #0B160F;
-      --cream: #F6F1E4;
-      --gold: #D9A84E;
-      --coral: #E08A6B;
+      /* base palette — swap any hex here and the whole theme follows */
+      --bg: #FFFFFF;         /* page background — white */
+      --bg-2: #F3F6EE;       /* raised surfaces — pale sage */
+      --ink: #0D0D0D;        /* deepest tone — black (shadows, paper text) */
+      --cream: #151719;      /* main text — near-black */
+      --gold: #D9A84E;       /* warm accent — gold */
+      --coral: #E08A6B;      /* warm accent — coral */
+      --head: #3E9B4F;       /* headings — light green on the white page */
 
       /* derived tokens — every one is built from the base palette above */
       --cream-dim: color-mix(in srgb, var(--cream) 64%, transparent);
@@ -93,6 +103,18 @@
     :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
     ::selection { background: color-mix(in srgb, var(--gold) 32%, transparent); }
 
+    /* the whole page is rendered by JS (envelope → reveal), so give people
+       without JavaScript a proper message instead of a blank green screen */
+    noscript {
+      position: fixed; inset: 0; z-index: 300;
+      display: grid; place-content: center; gap: 12px;
+      text-align: center; padding: 2rem;
+      background: var(--bg); color: var(--cream);
+      font-size: 0.98rem;
+    }
+    noscript strong { font-family: var(--serif); font-weight: 500; font-size: 1.5rem; color: var(--gold); }
+    noscript p { max-width: 44ch; margin-inline: auto; color: var(--cream-dim); }
+
     /* faint film grain — makes the page feel papery rather than flat.
        (the SVG rect draws in black by default; no colour literal needed) */
     body::after {
@@ -107,7 +129,7 @@
     .wrap { max-width: var(--max); margin: 0 auto; padding-inline: var(--pad); }
     .section { padding-block: clamp(4.5rem, 10vh, 7.5rem); scroll-margin-top: 76px; }
 
-    h1, h2, h3 { font-family: var(--serif); font-weight: 500; text-wrap: balance; }
+    h1, h2, h3 { font-family: var(--serif); font-weight: 500; text-wrap: balance; color: var(--head); }
     p { text-wrap: pretty; }
 
     .kicker {
@@ -181,7 +203,7 @@
       inset: 18px 20px; z-index: 2; border-radius: 7px;
       background:
         repeating-linear-gradient(transparent 0 26px, color-mix(in srgb, var(--ink) 6%, transparent) 26px 27px),
-        var(--cream);
+        var(--bg);
       color: var(--ink);
       font-family: var(--serif); font-style: italic;
       display: grid; place-items: center; text-align: center;
@@ -214,12 +236,12 @@
       width: 56px; height: 56px; margin: -28px 0 0 -28px;
       border-radius: 50%;
       display: grid; place-items: center;
-      font-family: var(--hand); font-weight: 700; font-size: 1.5rem; color: var(--cream);
+      font-family: var(--hand); font-weight: 700; font-size: 1.5rem; color: var(--bg);
       background: radial-gradient(circle at 34% 28%,
-        color-mix(in srgb, var(--coral) 76%, var(--cream)) 0%,
+        color-mix(in srgb, var(--coral) 76%, var(--bg)) 0%,
         var(--coral) 62%,
         color-mix(in srgb, var(--coral) 68%, var(--ink)));
-      box-shadow: 0 6px 16px var(--shadow), 0 0 0 3px var(--coral-soft), inset 0 0 0 2px color-mix(in srgb, var(--cream) 16%, transparent);
+      box-shadow: 0 6px 16px var(--shadow), 0 0 0 3px var(--coral-soft), inset 0 0 0 2px color-mix(in srgb, var(--bg) 16%, transparent);
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
     .envelope:hover .seal { transform: scale(1.05); }
@@ -285,7 +307,7 @@
       display: inline-flex; align-items: center; gap: 10px;
     }
     .moment .num::after { content: ""; width: 34px; height: 1px; background: color-mix(in srgb, var(--gold) 45%, transparent); }
-    .moment h3 { margin-top: 0.9rem; font-size: 1.5rem; color: var(--cream); }
+    .moment h3 { margin-top: 0.9rem; font-size: 1.5rem; color: var(--head); }
     .moment p { margin-top: 0.7rem; color: var(--cream-dim); font-size: 0.98rem; }
 
     /* ============================== GALLERY ==============================
@@ -328,7 +350,7 @@
       max-width: 620px;
       background:
         repeating-linear-gradient(transparent 0 34px, color-mix(in srgb, var(--ink) 6%, transparent) 34px 35px),
-        var(--cream);
+        var(--bg);
       color: var(--ink);
       border-radius: 10px 10px 12px 12px;
       padding: clamp(2rem, 5vw, 3.4rem);
@@ -365,7 +387,7 @@
     .dl dd { color: var(--cream); font-size: 1rem; }
     .dl dd i { font-style: italic; opacity: 0.75; }
 
-    .countdown h3 { font-size: 1.2rem; color: var(--cream); }
+    .countdown h3 { font-size: 1.2rem; color: var(--head); }
     .cd-row { display: flex; gap: clamp(12px, 3vw, 24px); margin-top: 1.6rem; }
     .cd-unit { text-align: left; }
     .cd-num {
@@ -382,7 +404,7 @@
       font-family: var(--sans); font-weight: 500; font-size: 0.8rem;
       letter-spacing: 0.22em; text-transform: uppercase;
       color: var(--ink);
-      background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 84%, var(--cream)) 0%, var(--gold) 100%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--gold) 84%, var(--bg)) 0%, var(--gold) 100%);
       border-radius: 99px;
       text-decoration: none;
       box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--gold) 50%, transparent);
@@ -549,6 +571,149 @@
     footer .foot-love { font-family: var(--hand); font-size: 1.25rem; color: var(--gold); letter-spacing: 0; }
     footer .foot-credit { color: var(--cream-faint2); }
 
+    /* ============================== COUNTDOWN POLISH ==============================
+       Numbers hold their width (tabular-nums) so digits never jitter, weight is
+       bumped for presence, and the seconds unit thumps on every tick. */
+    .cd-num { font-weight: 600; letter-spacing: 0.01em; }
+    .cd-s .cd-num { animation: cd-thump 1s ease-in-out infinite; }
+    @keyframes cd-thump {
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.14); }
+    }
+    .cd-row[hidden] { display: none; }
+    .countdown .cd-done {
+      margin-top: 0.9rem;
+      font-family: var(--serif); font-style: italic; font-weight: 500;
+      font-size: clamp(1.6rem, 3.4vw, 2.2rem);
+      color: var(--gold);
+      animation: cd-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes cd-pop {
+      0%   { opacity: 0; transform: scale(0.9) translateY(6px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* ============================== GALLERY HOVER + LIGHTBOX ==============================
+       Tiles with a real photo get lift + a whisper of tilt on hover; clicking
+       opens a minimal lightbox (prev/next/close, keyboard friendly). */
+    .gallery-item { transition: transform 0.35s ease, box-shadow 0.35s ease; }
+    .gallery-item.has-photo { cursor: zoom-in; }
+    .gallery-item.has-photo:hover {
+      transform: translateY(-4px) rotate(-0.6deg) scale(1.015);
+      box-shadow: 0 26px 46px -22px var(--shadow);
+    }
+    .gallery-item.has-photo img.loaded { transition: opacity 0.6s ease, transform 0.6s ease; }
+    .gallery-item.has-photo:hover img.loaded { transform: scale(1.05); }
+
+    .lightbox { position: fixed; inset: 0; z-index: 90; }
+    .lightbox[hidden] { display: none; }
+    .lb-backdrop {
+      position: absolute; inset: 0;
+      background: color-mix(in srgb, var(--bg) 90%, transparent);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+    .lb-frame { position: relative; height: 100%; display: grid; place-items: center; padding: 48px 64px; }
+    .lb-stage img {
+      display: block; max-width: min(1040px, 92vw); max-height: 84vh;
+      border-radius: 12px;
+      box-shadow: 0 44px 90px -32px var(--shadow);
+    }
+    .lb-btn {
+      position: absolute; z-index: 2;
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--bg-2) 88%, transparent);
+      color: var(--gold);
+      font-size: 1.35rem; line-height: 1; cursor: pointer;
+      display: grid; place-items: center;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
+    }
+    .lb-btn:hover { background: var(--gold); color: var(--ink); }
+    .lb-close { top: 18px; right: 18px; }
+    .lb-close:hover { transform: scale(1.08); }
+    .lb-prev { left: 16px; top: 50%; transform: translateY(-50%); }
+    .lb-next { right: 16px; top: 50%; transform: translateY(-50%); }
+    .lb-prev:hover, .lb-next:hover { transform: translateY(-50%) scale(1.1); }
+    .lb-count {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      font-size: 0.7rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--cream-faint);
+    }
+    body.lb-open { overflow: hidden; }
+
+    /* ============================== SCROLL REVEAL ==============================
+       Sections fade in and drift up a touch as they enter the viewport. The
+       class is added from JS only when motion is allowed, so content is always
+       visible by default (no-JS and reduced-motion safe). */
+    .site .reveal {
+      opacity: 0; transform: translateY(22px);
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .site .reveal.in { opacity: 1; transform: translateY(0); }
+
+    /* ============================== STICKY MINI COUNTDOWN ==============================
+       A small pill that drifts in once you scroll past the hero, so the party
+       is never far from a fingertip. Links straight to the details. */
+    .mini-count {
+      position: fixed; right: 18px; bottom: 18px; z-index: 50;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 20px;
+      font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold); text-decoration: none;
+      background: color-mix(in srgb, var(--bg-2) 90%, transparent);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid var(--line); border-radius: 99px;
+      box-shadow: 0 16px 34px -14px var(--shadow);
+      white-space: nowrap;
+      opacity: 0; transform: translateY(12px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .mini-count.show { opacity: 1; transform: translateY(0); }
+    .mini-count:hover { border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
+
+    /* ============================== RSVP FORM ==============================
+       Replaces the bare mailto: — a real (Formspree) form with a gentle
+       success state. Inputs stay ≥16px so iOS never auto-zooms on focus. */
+    .rsvp-form {
+      margin-top: 2rem;
+      padding: clamp(1.2rem, 3vw, 1.6rem);
+      background: color-mix(in srgb, var(--bg-2) 72%, transparent);
+      border: 1px solid var(--line); border-radius: 18px;
+    }
+    .rsvp-form label {
+      display: block; margin-top: 1.1rem;
+      font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+    }
+    .rsvp-form label:first-of-type { margin-top: 0; }
+    .rsvp-form input,
+    .rsvp-form select,
+    .rsvp-form textarea {
+      display: block; width: 100%; margin-top: 0.45rem;
+      min-height: 48px; padding: 0.8rem 0.9rem;
+      font-family: var(--sans); font-size: 1rem; font-weight: 400;
+      color: var(--cream);
+      background: color-mix(in srgb, var(--bg) 55%, transparent);
+      border: 1px solid var(--line); border-radius: 10px;
+      transition: border-color 0.25s ease, background 0.25s ease;
+    }
+    .rsvp-form textarea { min-height: 86px; resize: vertical; line-height: 1.5; }
+    .rsvp-form input:focus,
+    .rsvp-form select:focus,
+    .rsvp-form textarea:focus {
+      outline: 2px solid var(--gold); outline-offset: 2px;
+      background: color-mix(in srgb, var(--bg) 40%, transparent);
+    }
+    .rsvp-form .rsvp { margin-top: 1.4rem; border: 0; cursor: pointer; }
+    .rsvp-form .rsvp:disabled { opacity: 0.55; cursor: wait; transform: none; box-shadow: none; }
+    .rsvp-form.sent .rsvp-fields { display: none; }
+    .rsvp-error { margin-top: 0.85rem; font-size: 0.82rem; color: var(--coral); }
+    .rsvp-done {
+      margin: 0.2rem 0 0.4rem;
+      font-family: var(--serif); font-style: italic; font-size: 1.3rem; color: var(--gold);
+      animation: cd-pop 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
     /* ============================== RESPONSIVE ============================== */
     @media (max-width: 860px) {
       .moments { grid-template-columns: 1fr; }
@@ -561,6 +726,9 @@
       .wishes-grid { grid-template-columns: 1fr; }
       .nav-links { gap: 12px; }
       .dl li { grid-template-columns: 92px 1fr; gap: 12px; }
+      .mini-count { right: 10px; bottom: 10px; padding: 10px 15px; font-size: 0.64rem; }
+      .lb-frame { padding: 44px 10px; }
+      .lb-btn { width: 42px; height: 42px; }
     }
 
     /* ============================== REDUCED MOTION ==============================
@@ -572,12 +740,19 @@
       .flame { animation: none; }
       .candle.out .smoke { animation: none; opacity: 0; }
       .candle.out .flame { transition: none; }
+      .cd-s .cd-num { animation: none; }
+      .rsvp-done { animation: none; }
+      .mini-count { transition: none; }
       .envelope-scene, .envelope.open .env-letter, .envelope.open .env-flap, .envelope.open .seal { transition: none; }
     }
   </style>
 </head>
 
 <body>
+    <noscript>
+      <strong>This card folds out with a little JavaScript.</strong>
+      <p>It only runs the countdown, the photo grid and the candles — nothing tracks you, nothing phones home. Switch JavaScript back on and the wax seal opens on its own.</p>
+    </noscript>
   <!-- ambient background: a few slow-drifting glowing dots, nothing more -->
   <div class="ambient" aria-hidden="true">
     <span class="dot dot--1"></span>
@@ -655,14 +830,16 @@
         <span class="kicker">The gallery</span>
         <h2 class="section-title">Years, in no particular order.</h2>
         <div class="gallery">
-          <figure class="gallery-item g--big" data-ph="1"><img data-src="photo-1.jpg" alt="[Richard — a favourite photo]" loading="lazy" /></figure>
-          <figure class="gallery-item" data-ph="2"><img data-src="" alt="[Richard, somewhere sunny]" loading="lazy" /></figure>
-          <figure class="gallery-item g--tall" data-ph="3"><img data-src="" alt="[Richard, caught mid-laugh]" loading="lazy" /></figure>
-          <figure class="gallery-item" data-ph="4"><img data-src="" alt="[Richard, out somewhere]" loading="lazy" /></figure>
-          <figure class="gallery-item g--wide" data-ph="5"><img data-src="" alt="[Richard, with friends]" loading="lazy" /></figure>
-          <figure class="gallery-item" data-ph="6"><img data-src="" alt="[Richard — a quiet moment]" loading="lazy" /></figure>
-          <figure class="gallery-item" data-ph="7"><img data-src="" alt="[Richard, unimpressed by something]" loading="lazy" /></figure>
-          <figure class="gallery-item" data-ph="8"><img data-src="" alt="[Richard, at his best]" loading="lazy" /></figure>
+          <!-- tiles point at /images/photo-1.jpg … photo-8.jpg; drop real files
+               in there and the grid + lightbox pick them up automatically -->
+          <figure class="gallery-item g--big" data-ph="1"><img data-src="/images/photo-1.jpg" alt="[Richard — a favourite photo]" loading="lazy" decoding="async" /></figure>
+          <figure class="gallery-item" data-ph="2"><img data-src="/images/photo-2.jpg" alt="[Richard, somewhere sunny]" loading="lazy" decoding="async" /></figure>
+          <figure class="gallery-item g--tall" data-ph="3"><img data-src="/images/photo-3.jpg" alt="[Richard, caught mid-laugh]" loading="lazy" decoding="async" /></figure>
+          <figure class="gallery-item" data-ph="4"><img data-src="/images/photo-4.jpg" alt="[Richard, out somewhere]" loading="lazy" decoding="async" /></figure>
+          <figure class="gallery-item g--wide" data-ph="5"><img data-src="/images/photo-5.jpg" alt="[Richard, with friends]" loading="lazy" decoding="async" /></figure>
+          <figure class="gallery-item" data-ph="6"><img data-src="/images/photo-6.jpg" alt="[Richard — a quiet moment]" loading="lazy" decoding="async" /></figure>
+          <figure class="gallery-item" data-ph="7"><img data-src="/images/photo-7.jpg" alt="[Richard, unimpressed by something]" loading="lazy" decoding="async" /></figure>
+          <figure class="gallery-item" data-ph="8"><img data-src="/images/photo-8.jpg" alt="[Richard, at his best]" loading="lazy" decoding="async" /></figure>
         </div>
       </section>
 
@@ -692,7 +869,7 @@
         <div class="details-grid">
           <ul class="dl">
             <li><dt>When</dt><dd>Monday, 28 September 2026 &middot; 7:30 PM</dd></li>
-            <li><dt>Where</dt><dd><i>[Venue or address goes here]</i></dd></li>
+            <li><dt>Where</dt><dd><i id="venue">TBD</i></dd></li>
             <li><dt>Dress code</dt><dd>Smart-casual. Gold encouraged, average jokes discouraged.</dd></li>
             <li><dt>Bring</dt><dd>Yourself, an empty stomach, and the good stories.</dd></li>
           </ul>
@@ -702,10 +879,27 @@
               <div class="cd-unit"><span class="cd-num" id="cdD">&ndash;</span><span class="cd-lab">days</span></div>
               <div class="cd-unit"><span class="cd-num" id="cdH">&ndash;</span><span class="cd-lab">hours</span></div>
               <div class="cd-unit"><span class="cd-num" id="cdM">&ndash;</span><span class="cd-lab">minutes</span></div>
-              <div class="cd-unit"><span class="cd-num" id="cdS">&ndash;</span><span class="cd-lab">seconds</span></div>
+              <div class="cd-unit cd-s"><span class="cd-num" id="cdS">&ndash;</span><span class="cd-lab">seconds</span></div>
             </div>
             <p class="cd-done" id="cdDone" hidden>That's tonight. See you there — don't be late.</p>
-            <a class="rsvp" href="mailto:rsvp@example.com?subject=RSVP%20%E2%80%94%20Richard%27s%20birthday&body=Name%3A%0AComing%3A%20yes%20%2F%20maybe%0A%0A(diet%2Fmusic%20requests%20welcome)" aria-label="RSVP to Richard's birthday party">RSVP &mdash; I'm in</a>
+            <form class="rsvp-form" id="rsvpForm" novalidate>
+              <div class="rsvp-fields">
+                <input type="hidden" name="_subject" value="RSVP from the birthday page" />
+                <label for="rsvpName">Your name</label>
+                <input id="rsvpName" name="name" type="text" autocomplete="name" placeholder="Who's coming?" required />
+                <label for="rsvpAttending">Will you make it?</label>
+                <select id="rsvpAttending" name="attending">
+                  <option value="yes">Yes — wouldn't miss it</option>
+                  <option value="maybe">Maybe — counting on it</option>
+                  <option value="no">Sadly, can't make it</option>
+                </select>
+                <label for="rsvpRequests">Dietary or music requests</label>
+                <textarea id="rsvpRequests" name="requests" rows="3" placeholder="Allergies, songs to play, small dreams…"></textarea>
+                <p class="rsvp-error" id="rsvpError" role="alert" hidden></p>
+                <button type="submit" class="rsvp">RSVP — I'm in</button>
+              </div>
+              <p class="rsvp-done" id="rsvpDone" role="status" hidden>Thanks — see you there! &nbsp;&#127874;</p>
+            </form>
           </div>
         </div>
       </section>
@@ -793,6 +987,19 @@
       </div>
     </main>
 
+    <!-- sticky "days to go" nudge — drifts in once you scroll past the hero -->
+    <a class="mini-count" id="miniCount" href="#details" aria-label="Party countdown"></a>
+
+    <!-- photo lightbox (prev / next / close, keyboard friendly) -->
+    <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" hidden>
+      <div class="lb-backdrop" data-lb-close></div>
+      <button type="button" class="lb-btn lb-close" data-lb-close aria-label="Close photo viewer">&nbsp;&times;&nbsp;</button>
+      <button type="button" class="lb-btn lb-prev" id="lbPrev" aria-label="Previous photo">&nbsp;&larr;&nbsp;</button>
+      <figure class="lb-stage"><img id="lbImg" alt="" /></figure>
+      <button type="button" class="lb-btn lb-next" id="lbNext" aria-label="Next photo">&nbsp;&rarr;&nbsp;</button>
+      <p class="lb-count" id="lbCount"></p>
+    </div>
+
     <footer>
       <div class="footer-inner">
         <span>Made by hand, for Richard's birthday &middot; September 2026</span>
@@ -806,7 +1013,19 @@
     (function () {
       "use strict";
 
+      /* ===== CONFIG — the only values you should ever need to edit ===== */
+      var CONFIG = {
+        partyDate: "2026-09-28T19:30:00",                   // ← local time: Monday, 28 September 2026, 7:30 PM
+        venue: "TBD — address to follow",                   // ← the party address
+        rsvpEndpoint: "https://formspree.io/f/YOUR_FORM_ID" // ← swap in a real Formspree ID
+      };
+
       var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var bodyEl = document.body;
+
+      /* ============= VENUE (single source of truth: CONFIG) ============= */
+      var venueEl = document.getElementById("venue");
+      if (venueEl) venueEl.textContent = CONFIG.venue;
 
       /* ============= ENVELOPE → REVEAL ============= */
       var scene = document.getElementById("envelopeScene");
@@ -832,38 +1051,194 @@
         });
       }
 
-      /* ============= GALLERY (real photos in, placeholders out) ============= */
-      document.querySelectorAll(".gallery-item img").forEach(function (img) {
+      /* ============= GALLERY (placeholder grid + lightbox) =============
+         Tiles point at /images/photo-1…8.jpg. Until those files exist each
+         image 404s gracefully and the palette placeholder stays on screen. */
+      var galleryImgs = Array.prototype.slice.call(document.querySelectorAll(".gallery-item img"));
+      var lightbox = document.getElementById("lightbox");
+      var lbImg = document.getElementById("lbImg");
+      var lbCount = document.getElementById("lbCount");
+      var lbPrev = document.getElementById("lbPrev");
+      var lbNext = document.getElementById("lbNext");
+      var lbPos = -1;
+      var lastFocus = null;
+
+      function loadedCount() {
+        var n = 0;
+        galleryImgs.forEach(function (img) { if (img.classList.contains("loaded")) n++; });
+        return n;
+      }
+
+      function lbOpen(i) {
+        if (!lightbox) return;
+        lbPos = i;
+        lbImg.src = galleryImgs[i].src;
+        lbImg.alt = galleryImgs[i].alt || "";
+        var before = 0;
+        for (var k = 0; k < i; k++) { if (galleryImgs[k].classList.contains("loaded")) before++; }
+        lbCount.textContent = (before + 1) + " / " + loadedCount();
+        lightbox.hidden = false;
+        bodyEl.classList.add("lb-open");
+        lastFocus = document.activeElement;
+        lightbox.querySelector(".lb-close").focus();
+      }
+      function lbClose() {
+        if (!lightbox || lightbox.hidden) return;
+        lightbox.hidden = true;
+        lbImg.removeAttribute("src");
+        bodyEl.classList.remove("lb-open");
+        if (lastFocus && lastFocus.focus) lastFocus.focus();
+      }
+      function lbStep(dir) {
+        var n = galleryImgs.length;
+        if (!n || !loadedCount()) return;
+        for (var k = 1; k <= n; k++) {
+          var j = (lbPos + dir * k + n * 100) % n;
+          if (galleryImgs[j].classList.contains("loaded")) { lbOpen(j); return; }
+        }
+      }
+
+      galleryImgs.forEach(function (img) {
         var src = img.getAttribute("data-src");
         if (!src) return;
-        img.addEventListener("load", function () { img.classList.add("loaded"); });
+        img.addEventListener("load", function () {
+          img.classList.add("loaded");
+          if (img.parentElement) img.parentElement.classList.add("has-photo");
+        });
         img.addEventListener("error", function () { img.removeAttribute("src"); });
         img.src = src;
       });
 
-      /* ============= COUNTDOWN ============= */
-      var target = new Date("2026-09-28T19:30:00");   // ← set the party moment here
+      document.querySelectorAll(".gallery-item").forEach(function (item) {
+        item.addEventListener("click", function () {
+          var img = item.querySelector("img");
+          var i = img ? galleryImgs.indexOf(img) : -1;
+          if (i >= 0 && img.classList.contains("loaded")) lbOpen(i);
+        });
+      });
+      if (lightbox) {
+        lightbox.querySelectorAll("[data-lb-close]").forEach(function (el) {
+          el.addEventListener("click", lbClose);
+        });
+        lbPrev.addEventListener("click", function () { lbStep(-1); });
+        lbNext.addEventListener("click", function () { lbStep(1); });
+        document.addEventListener("keydown", function (ev) {
+          if (lightbox.hidden) return;
+          if (ev.key === "Escape") { ev.preventDefault(); lbClose(); }
+          else if (ev.key === "ArrowLeft") { ev.preventDefault(); lbStep(-1); }
+          else if (ev.key === "ArrowRight") { ev.preventDefault(); lbStep(1); }
+        });
+      }
+
+      /* ============= COUNTDOWN =============
+         Ticks straight away, then re-arms itself exactly on each new second
+         (no drift). CONFIG.partyDate is interpreted as the visitor's local
+         time on this machine. */
+      var target = new Date(CONFIG.partyDate);
+      var cdRow = document.getElementById("countdown");
       var cd = { d: document.getElementById("cdD"), h: document.getElementById("cdH"), m: document.getElementById("cdM"), s: document.getElementById("cdS") };
       var cdDone = document.getElementById("cdDone");
+      var mini = document.getElementById("miniCount");
+      var DAY = 86400000;
       var pad = function (n) { return String(n).padStart(2, "0"); };
-      setInterval(function () {
+
+      function cdTick() {
         var diff = target.getTime() - Date.now();
         if (diff <= 0) {
+          cdRow.hidden = true;
           cdDone.hidden = false;
+          cdDone.textContent = "Tonight's the night \uD83C\uDF89";
+          if (mini) mini.textContent = "Tonight \uD83C\uDF89 \u00b7 RSVP";
           return;
         }
-        cd.d.textContent = Math.floor(diff / 86400000);
+        cd.d.textContent = Math.floor(diff / DAY);
         cd.h.textContent = pad(Math.floor(diff / 3600000) % 24);
         cd.m.textContent = pad(Math.floor(diff / 60000) % 60);
         cd.s.textContent = pad(Math.floor(diff / 1000) % 60);
-      }, 250);
+        if (mini) {
+          var days = Math.ceil(diff / DAY);
+          mini.textContent = (days === 1 ? "1 day to go" : days + " days to go") + " \u00b7 RSVP";
+        }
+      }
+      function cdArm() {
+        cdTick();
+        setTimeout(cdArm, 1000 - (Date.now() % 1000));
+      }
+      cdArm();
+
+      /* ============= RSVP FORM (Formspree — swap the CONFIG endpoint) ============= */
+      var rsvpForm = document.getElementById("rsvpForm");
+      if (rsvpForm) {
+        rsvpForm.addEventListener("submit", function (ev) {
+          ev.preventDefault();
+          var name = document.getElementById("rsvpName");
+          var err = document.getElementById("rsvpError");
+          if (!name.value.trim()) {
+            err.textContent = "Please add your name first.";
+            err.hidden = false;
+            name.focus();
+            return;
+          }
+          err.hidden = true;
+          var btn = rsvpForm.querySelector('button[type="submit"]');
+          btn.disabled = true;
+          btn.textContent = "Sending\u2026";
+          fetch(CONFIG.rsvpEndpoint, {
+            method: "POST",
+            body: new FormData(rsvpForm),
+            headers: { "Accept": "application/json" }
+          })
+            .then(function (res) {
+              if (!res.ok) throw new Error("bad status");
+              return res.json();
+            })
+            .then(function () {
+              rsvpForm.classList.add("sent");
+              document.getElementById("rsvpDone").hidden = false;
+            })
+            .catch(function () {
+              btn.disabled = false;
+              btn.textContent = "RSVP \u2014 I'm in";
+              err.textContent = "Couldn't send just yet \u2014 if this keeps up, ping us directly.";
+              err.hidden = false;
+            });
+        });
+      }
+
+      /* ============= SCROLL REVEAL (IntersectionObserver, motion-aware) ============= */
+      if (!reduceMotion && "IntersectionObserver" in window) {
+        var revealEls = Array.prototype.slice.call(
+          document.querySelectorAll("#story, #gallery, #letter, #details, #cake, #wishes, .closing")
+        );
+        var revealObs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("in");
+            revealObs.unobserve(entry.target);
+          });
+        }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+        revealEls.forEach(function (el) {
+          el.classList.add("reveal");
+          revealObs.observe(el);
+        });
+      }
+
+      /* ============= STICKY MINI COUNTDOWN (nudge once past the hero) ============= */
+      var hero = document.querySelector(".hero");
+      if (hero && mini) {
+        var onMiniScroll = function () {
+          mini.classList.toggle("show", window.scrollY > (hero.offsetHeight - 140));
+        };
+        window.addEventListener("scroll", onMiniScroll, { passive: true });
+        onMiniScroll();
+      }
 
       /* ============= CAKE + CONFETTI PAYOFF ============= */
       // confetti colours are read straight from the CSS palette, so they
       // always match the theme (no duplicated hex values anywhere)
       function confettiColors() {
         var get = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
-        return [get("--cream"), get("--gold"), get("--coral")];
+        return [get("--gold"), get("--coral"), get("--bg-2")];
       }
       function fireConfetti() {
         if (typeof confetti !== "function") return;
