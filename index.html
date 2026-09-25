@@ -266,6 +266,7 @@
       border-bottom: 1px solid var(--line);
     }
     .nav-inner {
+      position: relative;
       max-width: var(--max); margin: 0 auto;
       padding-inline: var(--pad);
       height: 62px;
@@ -281,6 +282,28 @@
       padding-block: 6px;
     }
     .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+
+    /* hamburger toggle — hidden until the mobile breakpoint */
+    .nav-toggle {
+      display: none;
+      width: 44px; height: 44px; padding: 0;
+      border: 0; background: none; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-burger {
+      position: relative; display: block; margin: 0 auto;
+      width: 22px; height: 2px; border-radius: 2px; background: var(--cream);
+    }
+    .nav-burger::before, .nav-burger::after {
+      content: ""; position: absolute; left: 0; width: 22px; height: 2px; border-radius: 2px;
+      background: var(--cream);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+    }
+    .nav-burger::before { top: -7px; }
+    .nav-burger::after { top: 7px; }
+    .nav-toggle[aria-expanded="true"] .nav-burger { background: transparent; }
+    .nav-toggle[aria-expanded="true"] .nav-burger::before { top: 0; transform: rotate(45deg); }
+    .nav-toggle[aria-expanded="true"] .nav-burger::after { top: 0; transform: rotate(-45deg); }
 
     /* ============================== HERO ============================== */
     .hero { min-height: calc(100vh - 62px); display: flex; flex-direction: column; justify-content: center; padding-block: clamp(4rem, 10vh, 7rem); }
@@ -715,6 +738,9 @@
     }
 
     /* ============================== RESPONSIVE ============================== */
+    @media (max-width: 1100px) {
+      .gallery { grid-auto-rows: 128px; }
+    }
     @media (max-width: 860px) {
       .moments { grid-template-columns: 1fr; }
       .moment + .moment { margin-top: 0.4rem; }
@@ -722,13 +748,37 @@
       .wishes-grid { grid-template-columns: 1fr 1fr; }
       .gallery { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 120px; gap: 10px; }
     }
+    @media (max-width: 760px) {
+      /* nav collapses into a hamburger drawer below the bar */
+      .nav-toggle { display: grid; place-items: center; }
+      .nav-links {
+        position: absolute; top: 100%; left: 0; right: 0;
+        flex-direction: column; align-items: stretch; gap: 0;
+        background: color-mix(in srgb, var(--bg) 92%, transparent);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+        padding: 6px var(--pad) 14px;
+        opacity: 0; transform: translateY(-10px); pointer-events: none;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+      }
+      .nav.nav-open .nav-links { opacity: 1; transform: translateY(0); pointer-events: auto; }
+      .nav-links a { display: block; padding: 13px 2px; font-size: 0.82rem; border-bottom: 1px solid var(--line); }
+      .nav-links a:last-child { border-bottom: 0; }
+    }
     @media (max-width: 480px) {
       .wishes-grid { grid-template-columns: 1fr; }
-      .nav-links { gap: 12px; }
       .dl li { grid-template-columns: 92px 1fr; gap: 12px; }
+      .hero-kicker { letter-spacing: 0.2em; gap: 8px; }
+      .hero-kicker::after { width: 24px; }
+      .gallery { grid-auto-rows: 104px; gap: 8px; }
       .mini-count { right: 10px; bottom: 10px; padding: 10px 15px; font-size: 0.64rem; }
       .lb-frame { padding: 44px 10px; }
       .lb-btn { width: 42px; height: 42px; }
+    }
+    @media (max-width: 380px) {
+      .gallery { grid-auto-rows: 92px; }
+      .cd-num { font-size: clamp(2rem, 11vw, 2.4rem); }
     }
 
     /* ============================== REDUCED MOTION ==============================
@@ -743,6 +793,7 @@
       .cd-s .cd-num { animation: none; }
       .rsvp-done { animation: none; }
       .mini-count { transition: none; }
+      .nav-links { transition: none; }
       .envelope-scene, .envelope.open .env-letter, .envelope.open .env-flap, .envelope.open .seal { transition: none; }
     }
   </style>
@@ -780,7 +831,10 @@
     <header class="nav">
       <div class="nav-inner">
         <a class="nav-brand" href="#top">For <em>Richard</em></a>
-        <nav class="nav-links" aria-label="Sections">
+        <button type="button" class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Open menu">
+          <span class="nav-burger" aria-hidden="true"></span>
+        </button>
+        <nav class="nav-links" id="navLinks" aria-label="Sections">
           <a href="#story">Story</a>
           <a href="#gallery">Gallery</a>
           <a href="#details">Details</a>
@@ -1286,6 +1340,22 @@
           if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); c.click(); }
         });
       });
+
+      /* ============= MOBILE NAV DRAWER ============= */
+      var navEl = document.querySelector(".nav");
+      var navToggle = document.getElementById("navToggle");
+      if (navEl && navToggle) {
+        navToggle.addEventListener("click", function () {
+          var open = navEl.classList.toggle("nav-open");
+          navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+        navEl.querySelectorAll(".nav-links a").forEach(function (a) {
+          a.addEventListener("click", function () { navEl.classList.remove("nav-open"); navToggle.setAttribute("aria-expanded", "false"); });
+        });
+        document.addEventListener("keydown", function (ev) {
+          if (ev.key === "Escape") { navEl.classList.remove("nav-open"); navToggle.setAttribute("aria-expanded", "false"); }
+        });
+      }
 
       /* ============= SCROLLSPY ============= */
       var links = Array.prototype.slice.call(document.querySelectorAll('.nav-links a[href^="#"]'));
