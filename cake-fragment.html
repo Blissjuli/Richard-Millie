@@ -23,14 +23,14 @@
          document.getElementById('candles').relightAll();
        (a global helper relightCandles() is also exposed)
 
-  STYLING: theme = deep plum bg (#150E24), cream frosting (#F5EDE0),
-  gold accent (#E7B15C), coral accent (#F2665A). All colours are CSS
+  STYLING: theme = warm black bg, cream frosting, metallic gold, and coral.
+  All colours are CSS
   custom properties you can override from your own stylesheet.
 ===================================================================== -->
 
 <!-- ==================== START FRAGMENT ==================== -->
 
-<section id="candles" class="wish-cake" aria-label="Make a wish. Blow out all five candles to lock in your wish." style="--bg:#150E24;--cream:#F5EDE0;--gold:#E7B15C;--coral:#F2665A;--plum-1:#5B3B78;--plum-2:#3B2150;--ink:#241F33;">
+<section id="candles" class="wish-cake" aria-label="Make a wish. Blow out all five candles to lock in your wish." style="--bg:#090806;--cream:#F4EBD7;--gold:#D8B76A;--coral:#B97955;--plum-1:#241B0F;--plum-2:#100D08;--ink:#050403;--gold-light:#F5DDA0;--gold-dark:#8C642B;">
 
   <p class="cake-dir">Tap each flame to blow it out — then make a wish.</p>
 
@@ -109,13 +109,16 @@
   #candles * { box-sizing: border-box; }
 
   #candles {
-    --bg: #150E24;
-    --cream: #F5EDE0;
-    --gold: #E7B15C;
-    --coral: #F2665A;
-    --plum-1: #5B3B78;
-    --plum-2: #3B2150;
-    --ink: #241F33;
+    --bg: #090806;
+    --cream: #F4EBD7;
+    --gold: #D8B76A;
+    --coral: #B97955;
+    --plum-1: #241B0F;
+    --plum-2: #100D08;
+    --ink: #050403;
+    --gold-light: #F5DDA0;
+    --gold-dark: #8C642B;
+    --gold-foil: linear-gradient(135deg, var(--gold-dark), var(--gold-light) 26%, var(--gold) 48%, #F8E7B4 60%, var(--gold-dark));
 
     position: relative;
     display: flex;
@@ -125,7 +128,10 @@
     font-family: "Work Sans", system-ui, sans-serif;
     color: var(--cream);
     text-align: center;
-    background: var(--bg);
+    background:
+      radial-gradient(90% 80% at 50% 18%, color-mix(in srgb, var(--gold-light) 12%, transparent), transparent 68%),
+      radial-gradient(70% 55% at 50% 88%, color-mix(in srgb, var(--gold) 18%, transparent), transparent 72%),
+      var(--bg);
     border-radius: 28px;
     overflow: hidden;
   }
@@ -142,18 +148,18 @@
     height: 30px;
     margin-top: -4px;
     border-radius: 50%;
-    background: radial-gradient(ellipse at 50% 45%, #2A1B3F 0%, #201333 58%, #160F28 100%);
+    background: radial-gradient(ellipse at 50% 45%, var(--plum-1) 0%, var(--plum-2) 58%, var(--bg) 100%);
     border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
     box-shadow: inset 0 0 0 7px color-mix(in srgb, var(--gold) 12%, transparent),
                 0 12px 28px rgba(0, 0, 0, 0.42);
   }
 
-  /* ---- tiers (berry plum bodies, cream frosting, gold sash) ---- */
+  /* ---- tiers (warm dark bodies, cream frosting, gold sash) ---- */
   .tier-tier {
     position: relative;
     margin: 0 auto;
     border-radius: 12px 12px 9px 9px;
-    background: linear-gradient(180deg, var(--plum-1) 0%, #4A2E63 55%, var(--plum-2) 100%);
+    background: linear-gradient(180deg, var(--plum-1) 0%, color-mix(in srgb, var(--plum-1) 72%, var(--gold-shadow)) 55%, var(--plum-2) 100%);
     box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.09),
                 inset 0 -16px 20px rgba(0, 0, 0, 0.30),
                 0 14px 26px rgba(0, 0, 0, 0.35);
@@ -187,7 +193,7 @@
     left: 0;
     right: 0;
     height: 8px;
-    background: linear-gradient(180deg, var(--gold) 0%, #D5973F 100%);
+    background: var(--gold-foil);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   }
 
@@ -273,7 +279,7 @@
     height: 15px;
     margin-left: -3.5px;
     border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, #B4AAC2 55%, transparent) 0%, transparent 70%);
+    background: radial-gradient(circle, color-mix(in srgb, var(--cream) 45%, transparent) 0%, transparent 70%);
     opacity: 0;
     pointer-events: none;
   }
@@ -296,14 +302,14 @@
     font: 500 0.8rem "Work Sans", system-ui, sans-serif;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: var(--cream);
-    background: transparent;
-    border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent);
+    color: var(--ink);
+    background: var(--gold-foil);
+    border: 1px solid color-mix(in srgb, var(--gold-light) 75%, transparent);
     border-radius: 99px;
     cursor: pointer;
     transition: background 0.25s ease, color 0.25s ease;
   }
-  .relight:hover { background: var(--gold); color: var(--bg); }
+  .relight:hover { filter: brightness(1.08); box-shadow: 0 0 24px -6px color-mix(in srgb, var(--gold-light) 68%, transparent); }
 
   .cake-note { margin: 0; font-size: 0.85rem; color: color-mix(in srgb, var(--cream) 62%, transparent); }
 
