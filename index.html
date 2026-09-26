@@ -801,6 +801,25 @@
       border: 1px solid color-mix(in srgb, var(--gold) 26%, transparent); border-radius: 18px;
       box-shadow: 0 26px 54px -28px var(--shadow), inset 0 0 46px -22px color-mix(in srgb, var(--gold) 16%, transparent);
     }
+    /* Honeypot — off-screen and clipped, but a plain labelled text input in
+       the DOM, which is exactly what naive bots go for. Do NOT use
+       display:none or visibility:hidden: some bots skip those, and Formspree
+       still discards on value, so the strongest signal is "looks real, isn't". */
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      top: auto;
+      width: 1px; height: 1px;
+      margin: -1px; padding: 0; border: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    /* keep the inherited field styling from giving it real-world dimensions */
+    .hp-field input {
+      width: 1px; height: 1px; min-height: 0;
+      margin: 0; padding: 0; border: 0;
+    }
     .rsvp-form label {
       display: block; margin-top: 1.1rem;
       font-size: 0.68rem; letter-spacing: 0.26em; text-transform: uppercase;
@@ -1036,6 +1055,17 @@
             </div>
             <p class="cd-done" id="cdDone" hidden>That's tonight. See you there — don't be late.</p>
             <form class="rsvp-form" id="rsvpForm" novalidate>
+              <!-- Honeypot. The field name below is intentionally unremarkable.
+                   Do NOT rename it to Formspree's own reserved trap key:
+                   that key is only valid on Formspree-hosted forms, and
+                   including it in an AJAX POST makes the API reject the
+                   entire submission with a 403. A plain custom name like this
+                   is what bots fill in and humans never see. Formspree still
+                   filters on it server-side. -->
+              <div class="hp-field" aria-hidden="true">
+                <label for="rsvpCompany">Company</label>
+                <input id="rsvpCompany" name="company" type="text" tabindex="-1" autocomplete="off" />
+              </div>
               <div class="rsvp-fields">
                 <input type="hidden" name="_subject" value="RSVP from the birthday page" />
                 <label for="rsvpName">Your name</label>
@@ -1179,11 +1209,16 @@
     (function () {
       "use strict";
 
-      /* ===== CONFIG — the only values you should ever need to edit ===== */
+      /* ===== CONFIG — the only values you should ever edit =====
+         rsvpEndpoint is NOT set here: it is injected at build time from the
+         RSVP_ENDPOINT environment variable by build/inject-env.mjs, so the
+         real endpoint never sits in committed source. If you are running
+         this file straight from disk, run `npm run build` first, or the
+         placeholder below will be caught and reported. */
       var CONFIG = {
         partyDate: "2026-09-28T19:30:00",                       // ← local time: Monday, 28 September 2026, 7:30 PM
         venue: "Location shared upon RSVP 💌",                  // ← private home address; sent to guests directly after they RSVP
-        rsvpEndpoint: "https://formspree.io/f/xljdwvkw"        // ← real Formspree ID
+        rsvpEndpoint: "__RSVP_ENDPOINT__"                       // ← build-injected from RSVP_ENDPOINT
       };
 
       var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -1332,21 +1367,47 @@
       }
       cdArm();
 
-      /* ============= RSVP FORM (Formspree — swap the CONFIG endpoint) ============= */
+      /* ============= RSVP FORM (Formspree — endpoint injected at build time) =============
+         Spam: a hidden honeypot field ("company") is part of the form and is
+         checked here before anything leaves the page; Formspree filters on it
+         server-side too. Paired with Formspree's own filtering and an
+         origin/domain restriction in the dashboard. */
       var rsvpForm = document.getElementById("rsvpForm");
       if (rsvpForm) {
         rsvpForm.addEventListener("submit", function (ev) {
           ev.preventDefault();
           var name = document.getElementById("rsvpName");
           var err = document.getElementById("rsvpError");
+          var btn = rsvpForm.querySelector('button[type="submit"]');
+
           if (!name.value.trim()) {
             err.textContent = "Please add your name first.";
             err.hidden = false;
             name.focus();
             return;
           }
+
+          /* Honeypot tripped. Pretend it worked and drop the submission on the
+             floor — telling a bot it was caught just teaches it to retry. */
+          var honey = document.getElementById("rsvpCompany");
+          if (honey && honey.value.trim() !== "") {
+            rsvpForm.classList.add("sent");
+            document.getElementById("rsvpDone").hidden = false;
+            return;
+          }
+
+          /* If this file was opened straight from disk the build never ran, so
+             the placeholder is still in place. Say so plainly instead of firing
+             a request at an invalid URL. (Tested by shape, not by matching the
+             placeholder token — the build rewrites every literal occurrence of
+             that token, including any check that quoted it.) */
+          if (!/^https:\/\/\S+$/.test(CONFIG.rsvpEndpoint)) {
+            err.textContent = "RSVPs aren't open just yet — please try again later.";
+            err.hidden = false;
+            return;
+          }
+
           err.hidden = true;
-          var btn = rsvpForm.querySelector('button[type="submit"]');
           btn.disabled = true;
           btn.textContent = "Sending\u2026";
           fetch(CONFIG.rsvpEndpoint, {

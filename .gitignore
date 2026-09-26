@@ -1,0 +1,21 @@
+# ---- secrets / environment ----
+# Never commit real endpoints or keys. Copy .env.example → .env for local dev.
+.env
+.env.*
+!.env.example
+
+# ---- dependencies ----
+node_modules/
+
+# ---- build output ----
+# inject-env.mjs rewrites index.html in place, so keep a pristine copy to
+# restore from if a build is interrupted.
+index.built.html
+
+# ---- logs / editor / OS ----
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

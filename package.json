@@ -1,0 +1,16 @@
+{
+  "name": "richard-milli-birthday",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A hand-built single-page birthday keepsake for Richard Milli.",
+  "type": "module",
+  "scripts": {
+    "dev": "node build/inject-env.mjs --check && echo \"Open index.html directly, or run: npx serve .\"",
+    "build": "node build/inject-env.mjs",
+    "build:check": "node build/inject-env.mjs --check",
+    "reset": "git checkout -- index.html"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
