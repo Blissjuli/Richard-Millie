@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Richard Milli monogram">
+  <!-- Master artwork. favicon.ico / -16 / -32 / apple-touch-icon.png are all
+       rendered from this same geometry, so the SVG and the rasters agree.
+       Shape is deliberately chunky: the frame is a 2px-equivalent stroke and the
+       R fills ~40% of the canvas, which is what keeps it readable at 16px. -->
+  <rect x="0" y="0" width="1024" height="1024" rx="225" fill="#090806"/>
+  <rect x="64" y="64" width="896" height="896" rx="204" fill="none" stroke="#D8B76A" stroke-width="128"/>
+  <text x="512" y="528" text-anchor="middle" dominant-baseline="central"
+        font-family="Georgia, 'Times New Roman', Times, serif" font-weight="700"
+        font-size="620" fill="#F5DDA0">R</text>
+</svg>
